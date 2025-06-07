@@ -1,0 +1,32 @@
+version: '3.9'
+
+services:
+  db:
+    image: postgres:16
+    restart: always
+    environment:
+      POSTGRES_DB: oku_it
+      POSTGRES_USER: oku_admin
+      POSTGRES_PASSWORD: oku_password
+    volumes:
+      - ./db:/var/lib/postgresql/data
+      - ./csv_data:/app/csv_data
+    ports:
+      - "5432:5432"
+
+  backend:
+    build: ./backend
+    command: bash -c "python manage.py migrate && python manage.py runserver 0.0.0.0:8000"
+    volumes:
+      - ./backend:/app
+      - ./backend/csv_data:/app/csv_data
+    ports:
+      - "8000:8000"
+    depends_on:
+      - db
+    environment:
+      - DB_NAME=oku_it
+      - DB_USER=oku_admin
+      - DB_PASSWORD=oku_password
+      - DB_HOST=db
+      - DB_PORT=5432
