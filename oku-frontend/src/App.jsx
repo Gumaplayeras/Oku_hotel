@@ -1,5 +1,5 @@
 import { Box, Toolbar } from '@mui/material';
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import Login from './pages/Login';
 import Dashboard from './pages/Dashboard';
 import Equipos from './pages/Equipos';
@@ -7,7 +7,7 @@ import Sims from './pages/Sims';
 import Empleados from './pages/Empleados';
 import Incidencias from './pages/Incidencias';
 import PrivateRoute from './components/PrivateRoute';
-import MainLayout from './components/Layout/MainLayout';  // Este es el nuevo Layout central
+import MainLayout from './components/Layout/MainLayout';
 import Movimientos from './pages/Movimientos';
 import Sidebar from './components/Sidebar/Sidebar';
 
@@ -15,9 +15,9 @@ function App() {
   return (
     <Router>
       <Routes>
-        <Route path="/" element={<Login />} />
+        <Route path="/login" element={<Login />} />
 
-        <Route path="/dashboard" element={
+        <Route path="/" element={
           <PrivateRoute>
             <MainLayout>
               <Dashboard />
@@ -56,7 +56,7 @@ function App() {
             </MainLayout>
           </PrivateRoute>
         } />
-        
+
         <Route path="/movimientos" element={
           <PrivateRoute>
             <Box sx={{ display: 'flex' }}>
@@ -69,6 +69,7 @@ function App() {
           </PrivateRoute>
         } />
 
+        <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </Router>
   );
