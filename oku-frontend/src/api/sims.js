@@ -1,6 +1,6 @@
-import axiosInstance from './axiosInstance';
+import axiosClient from './axiosClient';
 
 export const getSims = async () => {
-  const response = await axiosInstance.get('/sims/');
+  const response = await axiosClient.get('/sims/');
   return response.data;
 };

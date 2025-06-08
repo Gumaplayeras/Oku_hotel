@@ -1,7 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import {
   Typography, Container, Paper, Table, TableBody, TableCell,
-  TableHead, TableRow, CircularProgress, TextField, Button, Grid, MenuItem
+  TableHead, TableRow, CircularProgress, TextField, Button, Grid, MenuItem,
+  Snackbar, Alert
 } from '@mui/material';
 import { getMovimientos, crearMovimiento } from '../api/movimientos';
 import { getEquipos } from '../api/equipos';
@@ -24,6 +25,9 @@ const Movimientos = () => {
   const [departamentos, setDepartamentos] = useState([]);
   const [ubicaciones, setUbicaciones] = useState([]);
   const [estados, setEstados] = useState([]);
+  const [submitting, setSubmitting] = useState(false);
+  const [success, setSuccess] = useState(false);
+  const [error, setError] = useState("");
 
   useEffect(() => {
     const fetchData = async () => {
@@ -51,12 +55,31 @@ const Movimientos = () => {
   }, []);
 
   const handleChange = (e) => {
-    setFormData({...formData, [e.target.name]: e.target.value });
+    setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
   const handleSubmit = async () => {
+    if (!formData.equipo || !formData.motivo || !formData.departamento || !formData.ubicacion || !formData.estado) {
+      setError("Todos los campos son obligatorios.");
+      return;
+    }
+
     try {
-      await crearMovimiento(formData);
+      setSubmitting(true);
+
+      const equipoSeleccionado = equipos.find(e => e.id === formData.equipo);
+      const departamentoSeleccionado = departamentos.find(d => d.id === formData.departamento);
+      const ubicacionSeleccionada = ubicaciones.find(u => u.id === formData.ubicacion);
+      const estadoSeleccionado = estados.find(s => s.id === formData.estado);
+
+      await crearMovimiento({
+        equipo: equipoSeleccionado.id_inventario,
+        motivo: formData.motivo,
+        departamento: departamentoSeleccionado.nombre,
+        ubicacion: ubicacionSeleccionada.fase,
+        estado: estadoSeleccionado.nombre
+      });
+
       const updatedMovimientos = await getMovimientos();
       setMovimientos(updatedMovimientos);
       setFormData({
@@ -66,8 +89,12 @@ const Movimientos = () => {
         ubicacion: '',
         estado: '',
       });
+      setSuccess(true);
     } catch (error) {
       console.error('Error al crear el movimiento:', error);
+      setError("Error al crear el movimiento.");
+    } finally {
+      setSubmitting(false);
     }
   };
 
@@ -77,16 +104,9 @@ const Movimientos = () => {
         <Typography variant="h5" gutterBottom>Nuevo Movimiento</Typography>
         <Grid container spacing={2}>
           <Grid item xs={12} sm={6}>
-            <TextField
-              select
-              label="Equipo"
-              name="equipo"
-              value={formData.equipo}
-              onChange={handleChange}
-              fullWidth
-            >
+            <TextField select label="Equipo" name="equipo" value={formData.equipo} onChange={handleChange} fullWidth>
               {equipos.map((equipo) => (
-                <MenuItem key={equipo.id_inventario} value={equipo.id_inventario}>
+                <MenuItem key={equipo.id} value={equipo.id}>
                   {equipo.id_inventario}
                 </MenuItem>
               ))}
@@ -94,24 +114,11 @@ const Movimientos = () => {
           </Grid>
 
           <Grid item xs={12} sm={6}>
-            <TextField
-              label="Motivo"
-              name="motivo"
-              value={formData.motivo}
-              onChange={handleChange}
-              fullWidth
-            />
+            <TextField label="Motivo" name="motivo" value={formData.motivo} onChange={handleChange} fullWidth />
           </Grid>
 
           <Grid item xs={12} sm={6}>
-            <TextField
-              select
-              label="Departamento"
-              name="departamento"
-              value={formData.departamento}
-              onChange={handleChange}
-              fullWidth
-            >
+            <TextField select label="Departamento" name="departamento" value={formData.departamento} onChange={handleChange} fullWidth>
               {departamentos.map((dep) => (
                 <MenuItem key={dep.id} value={dep.id}>{dep.nombre}</MenuItem>
               ))}
@@ -119,14 +126,7 @@ const Movimientos = () => {
           </Grid>
 
           <Grid item xs={12} sm={6}>
-            <TextField
-              select
-              label="Ubicación"
-              name="ubicacion"
-              value={formData.ubicacion}
-              onChange={handleChange}
-              fullWidth
-            >
+            <TextField select label="Ubicación" name="ubicacion" value={formData.ubicacion} onChange={handleChange} fullWidth>
               {ubicaciones.map((ubi) => (
                 <MenuItem key={ubi.id} value={ubi.id}>{ubi.fase}</MenuItem>
               ))}
@@ -134,14 +134,7 @@ const Movimientos = () => {
           </Grid>
 
           <Grid item xs={12} sm={6}>
-            <TextField
-              select
-              label="Estado"
-              name="estado"
-              value={formData.estado}
-              onChange={handleChange}
-              fullWidth
-            >
+            <TextField select label="Estado" name="estado" value={formData.estado} onChange={handleChange} fullWidth>
               {estados.map((est) => (
                 <MenuItem key={est.id} value={est.id}>{est.nombre}</MenuItem>
               ))}
@@ -149,7 +142,9 @@ const Movimientos = () => {
           </Grid>
 
           <Grid item xs={12}>
-            <Button variant="contained" onClick={handleSubmit}>Registrar Movimiento</Button>
+            <Button variant="contained" onClick={handleSubmit} disabled={submitting}>
+              {submitting ? "Registrando..." : "Registrar Movimiento"}
+            </Button>
           </Grid>
         </Grid>
       </Paper>
@@ -175,12 +170,12 @@ const Movimientos = () => {
             <TableBody>
               {movimientos.map((mov) => (
                 <TableRow key={mov.id}>
-                  <TableCell>{mov.equipo?.id_inventario || 'N/A'}</TableCell>
+                  <TableCell>{mov.equipo || 'N/A'}</TableCell>
                   <TableCell>{new Date(mov.fecha).toLocaleString()}</TableCell>
                   <TableCell>{mov.motivo}</TableCell>
-                  <TableCell>{mov.departamento?.nombre || 'N/A'}</TableCell>
-                  <TableCell>{mov.ubicacion?.fase || 'N/A'}</TableCell>
-                  <TableCell>{mov.estado?.nombre || 'N/A'}</TableCell>
+                  <TableCell>{mov.departamento || 'N/A'}</TableCell>
+                  <TableCell>{mov.ubicacion || 'N/A'}</TableCell>
+                  <TableCell>{mov.estado || 'N/A'}</TableCell>
                   <TableCell>{mov.realizado_por || 'N/A'}</TableCell>
                 </TableRow>
               ))}
@@ -188,6 +183,14 @@ const Movimientos = () => {
           </Table>
         )}
       </Paper>
+
+      <Snackbar open={success} autoHideDuration={3000} onClose={() => setSuccess(false)}>
+        <Alert severity="success">Movimiento creado correctamente</Alert>
+      </Snackbar>
+
+      <Snackbar open={!!error} autoHideDuration={3000} onClose={() => setError("")}>
+        <Alert severity="error">{error}</Alert>
+      </Snackbar>
     </Container>
   );
 };

@@ -1,11 +1,9 @@
-import axios from 'axios';
-
-const API_URL = 'http://localhost:8000/api';
+import axiosClient from './axiosClient';
 
 // Equipos
 export const getEquipos = async () => {
   try {
-    const response = await axios.get(`${API_URL}/equipos/`);
+    const response = await axiosClient.get('/equipos/');
     return response.data;
   } catch (error) {
     console.error('Error al obtener los equipos:', error);
@@ -16,7 +14,7 @@ export const getEquipos = async () => {
 // PDA
 export const getPDA = async () => {
   try {
-    const response = await axios.get(`${API_URL}/pda/`);
+    const response = await axiosClient.get('/pda/');
     return response.data;
   } catch (error) {
     console.error('Error al obtener las PDA:', error);
@@ -27,7 +25,7 @@ export const getPDA = async () => {
 // SIMS
 export const getSIMS = async () => {
   try {
-    const response = await axios.get(`${API_URL}/sims/`);
+    const response = await axiosClient.get('/sims/');
     return response.data;
   } catch (error) {
     console.error('Error al obtener las SIMs:', error);
@@ -38,7 +36,7 @@ export const getSIMS = async () => {
 // Oracle POS
 export const getOraclePOS = async () => {
   try {
-    const response = await axios.get(`${API_URL}/oracle/`);
+    const response = await axiosClient.get('/oracle/');
     return response.data;
   } catch (error) {
     console.error('Error al obtener los OraclePOS:', error);

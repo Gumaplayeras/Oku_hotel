@@ -53,11 +53,11 @@ class IncidenciaSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 class MovimientoSerializer(serializers.ModelSerializer):
-    equipo = serializers.StringRelatedField()
-    departamento = serializers.StringRelatedField()
-    ubicacion = serializers.StringRelatedField()
-    estado = serializers.StringRelatedField()
-    realizado_por = serializers.StringRelatedField()
+    realizado_por = serializers.StringRelatedField(read_only=True)
+    equipo = serializers.PrimaryKeyRelatedField(queryset=EquipoGeneral.objects.all())
+    departamento = serializers.PrimaryKeyRelatedField(queryset=Departamento.objects.all(), allow_null=True)
+    ubicacion = serializers.PrimaryKeyRelatedField(queryset=Ubicacion.objects.all(), allow_null=True)
+    estado = serializers.PrimaryKeyRelatedField(queryset=Estado.objects.all(), allow_null=True)
 
     class Meta:
         model = Movimiento

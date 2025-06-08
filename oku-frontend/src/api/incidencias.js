@@ -1,6 +1,6 @@
-import axiosInstance from './axiosInstance';
+import axiosClient from './axiosClient';
 
 export const getIncidencias = async () => {
-  const response = await axiosInstance.get('/incidencias/');
+  const response = await axiosClient.get('/incidencias/');
   return response.data;
 };

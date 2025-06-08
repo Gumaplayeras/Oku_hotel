@@ -1,16 +1,16 @@
-import axiosInstance from './axiosInstance';
+import axiosClient from './axiosClient';
 
 export const getTotalEquipos = async () => {
-  const response = await axiosInstance.get('/equipos/');
+  const response = await axiosClient.get('/equipos/');
   return response.data.length;
 };
 
 export const getTotalSims = async () => {
-  const response = await axiosInstance.get('/sims/');
+  const response = await axiosClient.get('/sims/');
   return response.data.length;
 };
 
 export const getTotalEmpleados = async () => {
-  const response = await axiosInstance.get('/empleados/');
+  const response = await axiosClient.get('/empleados/');
   return response.data.length;
 };

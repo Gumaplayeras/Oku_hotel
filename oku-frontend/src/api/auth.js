@@ -1,15 +1,13 @@
-import axios from 'axios';
-
-const API_URL = 'http://localhost:8000/api';
+import axiosClient from './axiosClient';
+import { setTokens, clearTokens } from '../utils/auth';
 
 export const login = async (username, password) => {
-  try {
-    const response = await axios.post(`${API_URL}/token/`, {
-      username,
-      password
-    });
-    return response.data;
-  } catch (error) {
-    throw error;
-  }
+  const response = await axiosClient.post('token/', { username, password });
+  const { access, refresh } = response.data;
+  setTokens({ access, refresh });
+  return response.data;
+};
+
+export const logout = () => {
+  clearTokens();
 };

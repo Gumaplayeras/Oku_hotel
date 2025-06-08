@@ -1,6 +1,6 @@
-import axiosInstance from './axiosInstance';
+import axiosClient from './axiosClient';
 
 export const getEquipos = async () => {
-  const response = await axiosInstance.get('/equipos/');
+  const response = await axiosClient.get('/equipos/');
   return response.data;
 };

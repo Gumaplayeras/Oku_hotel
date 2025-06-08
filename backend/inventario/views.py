@@ -46,3 +46,6 @@ class IncidenciaViewSet(viewsets.ModelViewSet):
 class MovimientoViewSet(viewsets.ModelViewSet):
     queryset = Movimiento.objects.all().order_by('-fecha')
     serializer_class = MovimientoSerializer
+
+    def perform_create(self, serializer):
+        serializer.save(realizado_por=self.request.user)
