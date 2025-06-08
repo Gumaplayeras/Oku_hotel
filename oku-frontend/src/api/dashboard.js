@@ -14,3 +14,8 @@ export const getTotalEmpleados = async () => {
   const response = await axiosClient.get('/empleados/');
   return response.data.length;
 };
+
+export const getTotalIncidencias = async () => {
+  const response = await axiosClient.get('/incidencias/');
+  return response.data.length;
+};
