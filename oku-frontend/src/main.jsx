@@ -9,7 +9,7 @@ import { AuthProvider } from './context/AuthContext'; // 👈 Importamos el Auth
 ReactDOM.createRoot(document.getElementById('root')).render(
   <React.StrictMode>
     <ThemeProvider theme={theme}>
-      <AuthProvider>  {/* 👈 Añadimos el AuthProvider aquí */}
+      <AuthProvider>
         <CssBaseline />
         <App />
       </AuthProvider>
