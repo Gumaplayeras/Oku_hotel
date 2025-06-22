@@ -1,9 +1,11 @@
 import React, { useEffect, useState } from 'react';
 import {
   Typography, Container, Paper, Table, TableBody, TableCell,
-  TableHead, TableRow, CircularProgress, TextField, Button
+  TableHead, TableRow, CircularProgress, TextField, Button, Grid, MenuItem
 } from '@mui/material';
 import { getEquipos } from '../api/equipos';
+import { getDepartamentos } from '../api/departamentos';
+import { getEstados } from '../api/estados';
 import EquipoDetalle from '../components/Equipos/EquipoDetalle';
 import EditarEquipo from '../components/Equipos/EditarEquipo';
 
@@ -15,6 +17,11 @@ const Equipos = () => {
   const [selectedEquipo, setSelectedEquipo] = useState(null);
   const [openModal, setOpenModal] = useState(false);
   const [openEditModal, setOpenEditModal] = useState(false);
+
+  const [filtroDepartamento, setFiltroDepartamento] = useState('');
+  const [filtroEstado, setFiltroEstado] = useState('');
+  const [departamentos, setDepartamentos] = useState([]);
+  const [estados, setEstados] = useState([]);
 
 const handleOpenModal = (equipo) => {
   setSelectedEquipo(equipo);
@@ -56,6 +63,40 @@ const handleEditarEquipo = (equipo) => {
     setFilteredEquipos(filtered);
   }, [search, equipos]);
 
+  useEffect(() => {
+    const fetchFiltros = async () => {
+      try {
+        const [deps, ests] = await Promise.all([
+          getDepartamentos(),
+          getEstados()
+        ]);
+        setDepartamentos(deps);
+        setEstados(ests);
+      } catch (error) {
+        console.error('Error cargando filtros:', error);
+      }
+    };
+    fetchFiltros();
+  }, []);
+
+  const handleBuscar = () => {
+    const filtrados = equipos.filter(eq => {
+      const coincideTexto =
+        eq.nombre?.toLowerCase().includes(search.toLowerCase()) ||
+        eq.empleado?.id?.toLowerCase().includes(search.toLowerCase()) ||
+        eq.id_inventario?.toLowerCase().includes(search.toLowerCase()) ||
+        eq.serial?.toLowerCase().includes(search.toLowerCase()) ||
+        (eq.empleado?.nombre?.toLowerCase().includes(search.toLowerCase()) ||
+         eq.empleado?.apellidos?.toLowerCase().includes(search.toLowerCase()));
+
+      const coincideDepartamento = filtroDepartamento ? eq.departamento?.id === filtroDepartamento : true;
+      const coincideEstado = filtroEstado ? eq.estado?.id === filtroEstado : true;
+
+      return coincideTexto && coincideDepartamento && coincideEstado;
+    });
+    setFilteredEquipos(filtrados);
+  };
+
 return (
   <Container maxWidth="lg" sx={{ mt: 4 }}>
     <Paper elevation={3} sx={{ p: 4 }}>
@@ -63,14 +104,48 @@ return (
         Gestión de Equipos
       </Typography>
 
-      <TextField
-        fullWidth
-        label="Buscar"
-        variant="outlined"
-        value={search}
-        onChange={(e) => setSearch(e.target.value)}
-        sx={{ mb: 3 }}
-      />
+      <Grid container spacing={2} sx={{ mb: 3 }}>
+        <Grid item xs={12} md={4}>
+          <TextField
+            fullWidth
+            label="Buscar por nombre, ID o serie"
+            variant="outlined"
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+          />
+        </Grid>
+        <Grid item xs={12} md={3}>
+          <TextField
+            fullWidth
+            select
+            label="Departamento"
+            value={filtroDepartamento}
+            onChange={(e) => setFiltroDepartamento(e.target.value)}
+          >
+            <MenuItem value="">Todos</MenuItem>
+            {departamentos.map((dep) => (
+              <MenuItem key={dep.id} value={dep.id}>{dep.nombre}</MenuItem>
+            ))}
+          </TextField>
+        </Grid>
+        <Grid item xs={12} md={3}>
+          <TextField
+            fullWidth
+            select
+            label="Estado"
+            value={filtroEstado}
+            onChange={(e) => setFiltroEstado(e.target.value)}
+          >
+            <MenuItem value="">Todos</MenuItem>
+            {estados.map((est) => (
+              <MenuItem key={est.id} value={est.id}>{est.nombre}</MenuItem>
+            ))}
+          </TextField>
+        </Grid>
+        <Grid item xs={12} md={2}>
+          <Button variant="contained" onClick={handleBuscar}>Buscar</Button>
+        </Grid>
+      </Grid>
 
       {loading ? (
         <CircularProgress />

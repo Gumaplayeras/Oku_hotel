@@ -1,15 +1,15 @@
 import React from 'react';
-import { Drawer, List, ListItemButton, ListItemIcon, ListItemText, Toolbar, Box } from '@mui/material';
+import { Drawer, List, ListItemButton, ListItemIcon, ListItemText, Toolbar, Box, Typography, alpha, useTheme } from '@mui/material'; // <-- Importa useTheme
 import DashboardIcon from '@mui/icons-material/Dashboard';
 import DevicesIcon from '@mui/icons-material/Devices';
 import SimCardIcon from '@mui/icons-material/SimCard';
 import PeopleIcon from '@mui/icons-material/People';
 import AssignmentIcon from '@mui/icons-material/Assignment';
 import { NavLink } from 'react-router-dom';
-import MoveDownIcon from '@mui/icons-material/MoveDown';
 
-const Sidebar = () => {
-  const drawerWidth = 240;
+const Sidebar = ({ isOpen }) => {
+  const drawerWidth = 260;
+  const theme = useTheme(); // <-- Obtén el objeto del tema
 
   const menuItems = [
     { text: 'Dashboard', icon: <DashboardIcon />, path: '/dashboard' },
@@ -19,37 +19,91 @@ const Sidebar = () => {
     { text: 'Incidencias', icon: <AssignmentIcon />, path: '/incidencias' },
   ];
 
+  const navLinkBaseStyle = {
+    textDecoration: 'none',
+    color: 'inherit',
+  };
+
   return (
     <Drawer
       variant="permanent"
+      open={isOpen}
       sx={{
-        width: drawerWidth,
+        width: isOpen ? drawerWidth : (theme) => theme.spacing(9),
         flexShrink: 0,
-        [`& .MuiDrawer-paper`]: { width: drawerWidth, boxSizing: 'border-box', backgroundColor: '#1e1e1e', color: '#fff' },
+        whiteSpace: 'nowrap',
+        transition: (theme) => theme.transitions.create('width', {
+          easing: theme.transitions.easing.sharp,
+          duration: theme.transitions.duration.enteringScreen,
+        }),
+        '& .MuiDrawer-paper': {
+          width: isOpen ? drawerWidth : (theme) => theme.spacing(9),
+          overflowX: 'hidden',
+          borderRight: 'none',
+          backgroundColor: theme.palette.background.paper, // Acceso directo al tema
+          boxShadow: theme.shadows[3], // Acceso directo al tema
+          transition: (theme) => theme.transitions.create('width', {
+            easing: theme.transitions.easing.sharp,
+            duration: theme.transitions.duration.leavingScreen,
+          }),
+        },
       }}
     >
-      <Toolbar />
-      <Box sx={{ overflow: 'auto' }}>
+      <Toolbar sx={{ justifyContent: 'center', py: 2 }}>
+        <Typography
+          variant="h5"
+          sx={{
+            color: 'primary.main',
+            fontWeight: 'bold',
+            transition: '0.3s',
+            textShadow: '0px 0px 4px rgba(0, 168, 168, 0.4)',
+          }}
+        >
+           {isOpen ? 'OKU' : 'O'}
+        </Typography>
+      </Toolbar>
+      <Box sx={{ px: isOpen ? 2 : 1.5, transition: '0.3s' }}>
         <List>
           {menuItems.map(item => (
-            <NavLink 
-              to={item.path} 
-              key={item.text} 
-              style={({ isActive }) => ({
-                textDecoration: 'none',
-                color: isActive ? '#4caf50' : '#fff',
-                backgroundColor: isActive ? '#333' : 'transparent',
-                borderRadius: 8,
-                margin: 4,
-                display: 'block'
-              })}
-            >
-              <ListItemButton>
-                <ListItemIcon sx={{ color: isActive => (isActive ? '#4caf50' : '#fff') }}>
-                  {item.icon}
-                </ListItemIcon>
-                <ListItemText primary={item.text} />
-              </ListItemButton>
+            <NavLink to={item.path} key={item.text} style={navLinkBaseStyle}>
+              {({ isActive }) => (
+                <ListItemButton
+                  sx={{
+                    mb: 1,
+                    py: 1.2,
+                    borderRadius: 2,
+                    // CORRECCIÓN AQUÍ: Usamos theme.palette para alpha
+                    backgroundColor: isActive
+                      ? alpha(theme.palette.primary.main, 0.12) // Acceso directo al color del tema
+                      : 'transparent',
+                    '&:hover': {
+                        backgroundColor: isActive
+                            ? alpha(theme.palette.primary.main, 0.2) // Acceso directo al color del tema
+                            : alpha(theme.palette.text.secondary, 0.08), // Acceso directo al color del tema
+                    },
+                  }}
+                >
+                  <ListItemIcon
+                    sx={{
+                      minWidth: 'auto',
+                      mr: isOpen ? 2 : 'auto',
+                      justifyContent: 'center',
+                      color: isActive ? 'primary.main' : 'text.secondary',
+                    }}
+                  >
+                    {item.icon}
+                  </ListItemIcon>
+                  <ListItemText
+                    primary={item.text}
+                    sx={{
+                      opacity: isOpen ? 1 : 0,
+                      transition: 'opacity 0.3s ease-in-out',
+                      color: isActive ? '#FFFFFF' : 'text.primary',
+                      fontWeight: isActive ? 600 : 400,
+                    }}
+                  />
+                </ListItemButton>
+              )}
             </NavLink>
           ))}
         </List>

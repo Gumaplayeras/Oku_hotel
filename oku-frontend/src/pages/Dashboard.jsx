@@ -1,9 +1,15 @@
 import React, { useEffect, useState } from 'react';
-import { Box, Typography, Container, Paper, Grid, CircularProgress } from '@mui/material';
+import { Box, Typography, Container, Paper, Grid, CircularProgress, Icon } from '@mui/material';
 import { getTotalEquipos, getTotalSims, getTotalEmpleados, getTotalIncidencias } from '../api/dashboard';
 import CountUp from 'react-countup';
 
+import DevicesIcon from '@mui/icons-material/Devices';
+import SimCardIcon from '@mui/icons-material/SimCard';
+import PeopleIcon from '@mui/icons-material/People';
+import AssignmentIcon from '@mui/icons-material/Assignment';
+
 const Dashboard = () => {
+  // La lógica de estado y useEffect permanece igual...
   const [equipos, setEquipos] = useState(null);
   const [sims, setSims] = useState(null);
   const [empleados, setEmpleados] = useState(null);
@@ -12,69 +18,61 @@ const Dashboard = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const equiposTotal = await getTotalEquipos();
-        const simsTotal = await getTotalSims();
-        const empleadosTotal = await getTotalEmpleados();
-        const incidenciasTotal = await getTotalIncidencias();
-
-        setEquipos(equiposTotal);
-        setSims(simsTotal);
-        setEmpleados(empleadosTotal);
-        setIncidencias(incidenciasTotal);
-      } catch (error) {
-        console.error('Error cargando datos del dashboard:', error);
-      }
+        const [equiposTotal, simsTotal, empleadosTotal, incidenciasTotal] = await Promise.all([
+          getTotalEquipos(), getTotalSims(), getTotalEmpleados(), getTotalIncidencias()
+        ]);
+        setEquipos(equiposTotal); setSims(simsTotal); setEmpleados(empleadosTotal); setIncidencias(incidenciasTotal);
+      } catch (error) { console.error('Error cargando datos del dashboard:', error); }
     };
-
     fetchData();
   }, []);
 
-  const renderCard = (title, value) => (
-    <Paper sx={{ p: 3, backgroundColor: '#1e1e1e', color: '#fff', borderRadius: 2 }}>
-      <Typography variant="subtitle1" sx={{ color: '#aaa', mb: 1 }}>{title}</Typography>
-      {value === null ? (
-        <CircularProgress color="secondary" />
-      ) : (
-        <Typography variant="h3" sx={{ fontWeight: 'bold', color: '#4caf50' }}>
-          <CountUp end={value || 0} duration={1.5} separator="," />
-        </Typography>
-      )}
+  // NOTA: 'theme.palette.primary.main' viene directamente de tu theme.js
+  const renderCard = (title, value, icon, iconBgColor) => (
+    <Paper elevation={0} sx={{ p: 3, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+      <Box>
+        <Typography variant="subtitle1" color="text.secondary">{title}</Typography>
+        {value === null ? (
+          <CircularProgress color="primary" size={24} sx={{ mt: 1 }} />
+        ) : (
+          <Typography variant="h3" sx={{ color: 'text.primary' }}>
+            <CountUp end={value || 0} duration={1.5} separator="," />
+          </Typography>
+        )}
+      </Box>
+      <Box sx={{
+        width: 60, height: 60, borderRadius: '50%', display: 'flex', alignItems: 'center',
+        justifyContent: 'center', backgroundColor: iconBgColor, color: '#fff'
+      }}>
+        {icon}
+      </Box>
     </Paper>
   );
 
   return (
-    <Box sx={{ backgroundColor: '#121212', minHeight: '100vh', py: 4 }}>
-      <Container maxWidth="lg">
-        <Typography variant="h3" gutterBottom sx={{ color: '#fff', fontWeight: 'bold' }}>
-          IT Dashboard
-        </Typography>
-
-        <Typography variant="h6" gutterBottom sx={{ color: '#bbb' }}>
-          Plataforma de Gestión IT
-        </Typography>
-
-        <Typography variant="body1" gutterBottom sx={{ color: '#888', mb: 4 }}>
-          BORJA SE VA A VOLVER LOCO CADA VEZ QUE NO FUNCIONE LA RED 😅
-        </Typography>
-
-        <Grid container spacing={3}>
-          <Grid item xs={12} md={3}>
-            {renderCard('Total Equipos', equipos)}
-          </Grid>
-
-          <Grid item xs={12} md={3}>
-            {renderCard('Total SIMs', sims)}
-          </Grid>
-
-          <Grid item xs={12} md={3}>
-            {renderCard('Incidencias Abiertas', incidencias)}
-          </Grid>
-
-          <Grid item xs={12} md={3}>
-            {renderCard('Empleados', empleados)}
-          </Grid>
+    <Box>
+      <Typography variant="h3" gutterBottom>
+        Dashboard
+      </Typography>
+      <Typography variant="h6" gutterBottom color="text.secondary">
+        Resumen general de la plataforma de gestión IT.
+      </Typography>
+      
+      <Grid container spacing={3} sx={{ mt: 2 }}>
+        {/* CAMBIO CLAVE: Los colores de los iconos ahora se leen de tu tema */}
+        <Grid item xs={12} sm={6} md={3}>
+          {renderCard('Total Equipos', equipos, <DevicesIcon />, (theme) => theme.palette.primary.main)}
         </Grid>
-      </Container>
+        <Grid item xs={12} sm={6} md={3}>
+          {renderCard('Total SIMs', sims, <SimCardIcon />, (theme) => theme.palette.secondary.main)}
+        </Grid>
+        <Grid item xs={12} sm={6} md={3}>
+          {renderCard('Incidencias', incidencias, <AssignmentIcon />, (theme) => theme.palette.secondary.main)}
+        </Grid>
+        <Grid item xs={12} sm={6} md={3}>
+          {renderCard('Empleados', empleados, <PeopleIcon />, (theme) => theme.palette.primary.main)}
+        </Grid>
+      </Grid>
     </Box>
   );
 };

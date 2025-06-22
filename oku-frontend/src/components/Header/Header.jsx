@@ -1,9 +1,10 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
-import { logout } from '../../api/auth';  // <-- Aquí la ruta depende de dónde esté tu Header.jsx
-import { AppBar, Toolbar, Typography, Button } from '@mui/material';
+import { logout } from '../../api/auth'; // Revisa tu ruta
+import { AppBar, Toolbar, Typography, Button, IconButton } from '@mui/material';
+import MenuIcon from '@mui/icons-material/Menu';
 
-export default function Header() {
+export default function Header({ onToggleSidebar }) {
   const navigate = useNavigate();
 
   const handleLogout = () => {
@@ -12,12 +13,37 @@ export default function Header() {
   };
 
   return (
-    <AppBar position="static" sx={{ backgroundColor: '#222' }}>
+    <AppBar 
+      position="static" 
+      elevation={0} 
+      sx={{ 
+        backgroundColor: 'background.paper', 
+        borderBottom: '1px solid',
+        borderColor: 'divider' 
+      }}
+    >
       <Toolbar>
-        <Typography variant="h6" sx={{ flexGrow: 1 }}>
+        <IconButton
+          edge="start"
+          color="inherit"
+          aria-label="menu"
+          onClick={onToggleSidebar} // Llama a la función del Layout
+          sx={{ mr: 2 }}
+        >
+          <MenuIcon />
+        </IconButton>
+
+        <Typography variant="h6" sx={{ flexGrow: 1, fontWeight: 600 }}>
           Oku IT Manager
         </Typography>
-        <Button color="inherit" onClick={handleLogout}>Logout</Button>
+
+        <Button 
+          variant="outlined"
+          color="primary"
+          onClick={handleLogout}
+        >
+          Logout
+        </Button>
       </Toolbar>
     </AppBar>
   );
