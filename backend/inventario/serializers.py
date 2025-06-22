@@ -22,6 +22,7 @@ class EmpleadoSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 class EquipoGeneralSerializer(serializers.ModelSerializer):
+    empleado = EmpleadoSerializer(read_only=True)
     departamento = DepartamentoSerializer(read_only=True)
     estado = EstadoSerializer(read_only=True)
     ubicacion = UbicacionSerializer(read_only=True)
@@ -53,6 +54,7 @@ class IncidenciaSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 class MovimientoSerializer(serializers.ModelSerializer):
+    motivo = serializers.CharField(allow_blank=True, required=False)
     realizado_por = serializers.StringRelatedField(read_only=True)
     equipo = serializers.PrimaryKeyRelatedField(queryset=EquipoGeneral.objects.all())
     departamento = serializers.PrimaryKeyRelatedField(queryset=Departamento.objects.all(), allow_null=True)

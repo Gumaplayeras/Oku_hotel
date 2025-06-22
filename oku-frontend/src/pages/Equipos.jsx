@@ -5,6 +5,7 @@ import {
 } from '@mui/material';
 import { getEquipos } from '../api/equipos';
 import EquipoDetalle from '../components/Equipos/EquipoDetalle';
+import EditarEquipo from '../components/Equipos/EditarEquipo';
 
 const Equipos = () => {
   const [equipos, setEquipos] = useState([]);
@@ -13,6 +14,7 @@ const Equipos = () => {
   const [search, setSearch] = useState('');
   const [selectedEquipo, setSelectedEquipo] = useState(null);
   const [openModal, setOpenModal] = useState(false);
+  const [openEditModal, setOpenEditModal] = useState(false);
 
 const handleOpenModal = (equipo) => {
   setSelectedEquipo(equipo);
@@ -22,6 +24,11 @@ const handleOpenModal = (equipo) => {
 const handleCloseModal = () => {
   setOpenModal(false);
   setSelectedEquipo(null);
+};
+
+const handleEditarEquipo = (equipo) => {
+  setSelectedEquipo(equipo);
+  setOpenEditModal(true);
 };
 
   useEffect(() => {
@@ -78,6 +85,7 @@ return (
                 <TableCell>Marca</TableCell>
                 <TableCell>Modelo</TableCell>
                 <TableCell>Serial</TableCell>
+                <TableCell>Empleado</TableCell>
                 <TableCell>Acciones</TableCell>
               </TableRow>
             </TableHead>
@@ -90,9 +98,12 @@ return (
                   <TableCell>{equipo.marca}</TableCell>
                   <TableCell>{equipo.modelo}</TableCell>
                   <TableCell>{equipo.serial}</TableCell>
+                  <TableCell>{equipo.empleado?.nombre || '—'}</TableCell>
                   <TableCell>
                     <Button variant="outlined" size="small" onClick={() => handleOpenModal(equipo)}>Detalle</Button>
-                    <Button variant="contained" size="small" sx={{ ml: 1 }}>Editar</Button>
+                    <Button variant="contained" size="small" sx={{ ml: 1 }} onClick={() => handleEditarEquipo(equipo)}>
+                      Editar
+                    </Button>
                   </TableCell>
                 </TableRow>
               ))}
@@ -100,6 +111,21 @@ return (
           </Table>
 
           <EquipoDetalle open={openModal} handleClose={handleCloseModal} equipo={selectedEquipo} />
+          <EditarEquipo
+            open={openEditModal}
+            handleClose={() => setOpenEditModal(false)}
+            equipo={selectedEquipo}
+            onEquipoActualizado={() => {
+              // Recargar los equipos después de editar
+              const fetchEquipos = async () => {
+                const data = await getEquipos();
+                setEquipos(data);
+                setFilteredEquipos(data);
+              };
+              fetchEquipos();
+              setOpenEditModal(false);
+            }}
+          />
         </>
       )}
     </Paper>

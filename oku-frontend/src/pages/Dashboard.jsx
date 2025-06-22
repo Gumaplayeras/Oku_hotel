@@ -46,11 +46,11 @@ const Dashboard = () => {
     <Box sx={{ backgroundColor: '#121212', minHeight: '100vh', py: 4 }}>
       <Container maxWidth="lg">
         <Typography variant="h3" gutterBottom sx={{ color: '#fff', fontWeight: 'bold' }}>
-          OKU IT Dashboard
+          IT Dashboard
         </Typography>
 
         <Typography variant="h6" gutterBottom sx={{ color: '#bbb' }}>
-          Plataforma de Gestión IT | Oku Ibiza 5⭐
+          Plataforma de Gestión IT
         </Typography>
 
         <Typography variant="body1" gutterBottom sx={{ color: '#888', mb: 4 }}>

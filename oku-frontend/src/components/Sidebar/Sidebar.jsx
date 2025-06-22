@@ -17,7 +17,6 @@ const Sidebar = () => {
     { text: 'SIMs', icon: <SimCardIcon />, path: '/sims' },
     { text: 'Empleados', icon: <PeopleIcon />, path: '/empleados' },
     { text: 'Incidencias', icon: <AssignmentIcon />, path: '/incidencias' },
-    { text: 'Movimientos', icon: <MoveDownIcon />, path: '/movimientos' }
   ];
 
   return (

@@ -33,6 +33,7 @@ class EquipoGeneral(models.Model):
     marca = models.CharField(max_length=100)
     modelo = models.CharField(max_length=100)
     serial = models.CharField(max_length=200)
+    empleado = models.ForeignKey(Empleado, on_delete=models.SET_NULL, null=True, blank=True)
     departamento = models.ForeignKey(Departamento, on_delete=models.SET_NULL, null=True, blank=True)
     estado = models.ForeignKey(Estado, on_delete=models.SET_NULL, null=True, blank=True)
     ubicacion = models.ForeignKey(Ubicacion, on_delete=models.SET_NULL, null=True, blank=True)

@@ -1,11 +1,9 @@
 from rest_framework import viewsets
 from .models import Departamento, Estado, Ubicacion, Empleado, EquipoGeneral, PDA, SIM, OraclePOS, Incidencia, Movimiento
 from .serializers import DepartamentoSerializer, EstadoSerializer, UbicacionSerializer, EmpleadoSerializer, EquipoGeneralSerializer, PDASerializer, SIMSerializer, OraclePOSSerializer, IncidenciaSerializer, MovimientoSerializer
-
-
-class EquipoGeneralViewSet(viewsets.ModelViewSet):
-    queryset = EquipoGeneral.objects.all()
-    serializer_class = EquipoGeneralSerializer
+from rest_framework.decorators import api_view, permission_classes
+from rest_framework.response import Response
+from rest_framework.permissions import IsAuthenticated
 
 class DepartamentoViewSet(viewsets.ModelViewSet):
     queryset = Departamento.objects.all()
@@ -24,8 +22,10 @@ class EmpleadoViewSet(viewsets.ModelViewSet):
     serializer_class = EmpleadoSerializer
 
 class EquipoGeneralViewSet(viewsets.ModelViewSet):
-    queryset = EquipoGeneral.objects.select_related('departamento', 'estado', 'ubicacion').all()
+    queryset = EquipoGeneral.objects.select_related('empleado').all()
     serializer_class = EquipoGeneralSerializer
+    lookup_field = 'id_inventario'
+    permission_classes = [IsAuthenticated]
 
 class PDAViewSet(viewsets.ModelViewSet):
     queryset = PDA.objects.all()
@@ -44,8 +44,15 @@ class IncidenciaViewSet(viewsets.ModelViewSet):
     serializer_class = IncidenciaSerializer
 
 class MovimientoViewSet(viewsets.ModelViewSet):
-    queryset = Movimiento.objects.all().order_by('-fecha')
+    queryset = Movimiento.objects.all().order_by('-fecha')  # ✅ Esto arregla el error
     serializer_class = MovimientoSerializer
+
+    def get_queryset(self):
+        queryset = Movimiento.objects.all().order_by('-fecha')
+        equipo_id = self.request.query_params.get('equipo')
+        if equipo_id:
+            queryset = queryset.filter(equipo__id_inventario=equipo_id)
+        return queryset
 
     def perform_create(self, serializer):
         serializer.save(realizado_por=self.request.user)
