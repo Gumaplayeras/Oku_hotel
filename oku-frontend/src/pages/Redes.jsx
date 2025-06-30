@@ -101,7 +101,6 @@ const Redes = () => {
       mt: 4, 
       mb: 4,
       transition: 'margin 0.3s ease',
-      marginLeft: { sm: '240px' } // Ajuste para el sidebar
     }}>
       {/* Header Section */}
       <Box sx={{ 
