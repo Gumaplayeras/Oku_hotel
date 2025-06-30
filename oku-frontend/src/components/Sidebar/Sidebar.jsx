@@ -6,6 +6,7 @@ import SimCardIcon from '@mui/icons-material/SimCard';
 import PeopleIcon from '@mui/icons-material/People';
 import AssignmentIcon from '@mui/icons-material/Assignment';
 import { NavLink } from 'react-router-dom';
+import LanIcon from '@mui/icons-material/Lan';
 
 const Sidebar = ({ isOpen }) => {
   const drawerWidth = 260;
@@ -17,6 +18,7 @@ const Sidebar = ({ isOpen }) => {
     { text: 'SIMs', icon: <SimCardIcon />, path: '/sims' },
     { text: 'Empleados', icon: <PeopleIcon />, path: '/empleados' },
     { text: 'Incidencias', icon: <AssignmentIcon />, path: '/incidencias' },
+    { text: 'Redes', icon: <LanIcon />, path: '/redes' },
   ];
 
   const navLinkBaseStyle = {

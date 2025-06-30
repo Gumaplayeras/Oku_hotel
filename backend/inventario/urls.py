@@ -1,10 +1,11 @@
 from django.urls import path, include
 from rest_framework import routers
+from rest_framework.routers import DefaultRouter
 from . import views
 from inventario.views import movimientos_por_equipo
 from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
 from .views import movimientos_por_equipo
-
+from inventario.views import SwitchViewSet
 
 router = routers.DefaultRouter()
 router.register(r'departamentos', views.DepartamentoViewSet)
@@ -17,6 +18,7 @@ router.register(r'sims', views.SIMViewSet)
 router.register(r'oracle', views.OraclePOSViewSet)
 router.register(r'incidencias', views.IncidenciaViewSet)
 router.register(r'movimientos', views.MovimientoViewSet)
+router.register(r'switches', views.SwitchViewSet)
 
 urlpatterns = [
     path('', include(router.urls)),

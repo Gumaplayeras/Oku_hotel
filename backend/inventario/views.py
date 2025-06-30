@@ -1,9 +1,17 @@
-from rest_framework import viewsets
-from .models import Departamento, Estado, Ubicacion, Empleado, EquipoGeneral, PDA, SIM, OraclePOS, Incidencia, Movimiento
-from .serializers import DepartamentoSerializer, EstadoSerializer, UbicacionSerializer, EmpleadoSerializer, EquipoGeneralSerializer, PDASerializer, SIMSerializer, OraclePOSSerializer, IncidenciaSerializer, MovimientoSerializer
-from rest_framework.decorators import api_view, permission_classes
+from rest_framework import viewsets, status
+from .models import (
+    Departamento, Estado, Ubicacion, Empleado, EquipoGeneral,
+    PDA, SIM, OraclePOS, Incidencia, Movimiento, Switch
+)
+from .serializers import (
+    DepartamentoSerializer, EstadoSerializer, UbicacionSerializer, EmpleadoSerializer,
+    EquipoGeneralSerializer, PDASerializer, SIMSerializer, OraclePOSSerializer,
+    IncidenciaSerializer, MovimientoSerializer, SwitchSerializer
+)
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
+from rest_framework.decorators import action
+from .network import reiniciar_switch 
 
 class DepartamentoViewSet(viewsets.ModelViewSet):
     queryset = Departamento.objects.all()
@@ -44,7 +52,7 @@ class IncidenciaViewSet(viewsets.ModelViewSet):
     serializer_class = IncidenciaSerializer
 
 class MovimientoViewSet(viewsets.ModelViewSet):
-    queryset = Movimiento.objects.all().order_by('-fecha')  # ✅ Esto arregla el error
+    queryset = Movimiento.objects.all().order_by('-fecha')
     serializer_class = MovimientoSerializer
 
     def get_queryset(self):
@@ -56,3 +64,21 @@ class MovimientoViewSet(viewsets.ModelViewSet):
 
     def perform_create(self, serializer):
         serializer.save(realizado_por=self.request.user)
+
+class SwitchViewSet(viewsets.ModelViewSet):
+    queryset = Switch.objects.all()
+    serializer_class = SwitchSerializer
+    permission_classes = [IsAuthenticated]
+
+    @action(detail=True, methods=['post'], url_path='reiniciar')
+    def reiniciar(self, request, pk=None):
+        try:
+            switch = self.get_object()
+            resultado = reiniciar_switch(switch)
+            if resultado["status"] == "ok":
+                # Devuelve solo un mensaje bonito, sin output detallado
+                return Response({"message": f"✅ Switch '{switch.nombre}' reiniciado correctamente"})
+            else:
+                return Response({"error": resultado["error"]}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        except Exception as e:
+            return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)

@@ -10,6 +10,7 @@ import PrivateRoute from './components/PrivateRoute';
 import MainLayout from './components/Layout/MainLayout';
 import Movimientos from './pages/Movimientos';
 import Sidebar from './components/Sidebar/Sidebar';
+import Redes from "./pages/Redes";
 
 function App() {
   return (
@@ -66,6 +67,14 @@ function App() {
                 <Movimientos />
               </Box>
             </Box>
+          </PrivateRoute>
+        } />
+
+        <Route path="/redes" element={
+          <PrivateRoute>
+            <MainLayout>
+              <Redes />
+            </MainLayout>
           </PrivateRoute>
         } />
 

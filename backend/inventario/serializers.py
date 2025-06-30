@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Departamento, Estado, Ubicacion, Empleado, EquipoGeneral, PDA, SIM, OraclePOS, Incidencia, Movimiento
+from .models import Departamento, Estado, Ubicacion, Empleado, EquipoGeneral, PDA, SIM, OraclePOS, Incidencia, Movimiento, Switch
 
 class DepartamentoSerializer(serializers.ModelSerializer):
     class Meta:
@@ -63,4 +63,9 @@ class MovimientoSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Movimiento
+        fields = '__all__'
+
+class SwitchSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Switch
         fields = '__all__'

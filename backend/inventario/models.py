@@ -104,3 +104,33 @@ class Movimiento(models.Model):
 
     def __str__(self):
         return f"Movimiento de {self.equipo.id_inventario} - {self.fecha.strftime('%Y-%m-%d %H:%M')}"
+    
+class Switch(models.Model):
+    MARCAS = [
+        ('Aruba', 'Aruba'),
+        ('Ubiquity', 'Ubiquity'),
+        ('Ruckus', 'Ruckus'),
+    ]
+
+    PLANTAS = [
+        ('1', 'Planta 1'),
+        ('2', 'Planta 2'),
+        ('3', 'Planta 3'),
+        ('4', 'Planta 4'),
+        ('5', 'Planta 5'),
+        ('6', 'Planta 6'),
+    ]
+
+    PLOTS = [
+        ('Plot1', 'Plot 1'),
+        ('Plot2', 'Plot 2'),
+    ]
+
+    nombre = models.CharField(max_length=100)
+    ip = models.GenericIPAddressField()
+    marca = models.CharField(max_length=20, choices=MARCAS)
+    planta = models.CharField(max_length=1, choices=PLANTAS)
+    lugar = models.CharField(max_length=10, choices=PLOTS)
+
+    def __str__(self):
+        return f"{self.nombre} ({self.ip}) - {self.marca} - Planta {self.planta} {self.lugar}"

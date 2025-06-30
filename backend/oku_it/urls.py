@@ -18,6 +18,7 @@ from django.contrib import admin
 from django.urls import path, include
 from rest_framework import routers
 from inventario import views
+from inventario.views import SwitchViewSet
 from rest_framework_simplejwt.views import (
     TokenObtainPairView,
     TokenRefreshView,
@@ -35,7 +36,7 @@ router.register(r'sims', views.SIMViewSet)
 router.register(r'oracle', views.OraclePOSViewSet)
 router.register(r'incidencias', views.IncidenciaViewSet)
 router.register(r'movimientos', views.MovimientoViewSet)
-
+router.register(r'switches', views.SwitchViewSet)
 
 urlpatterns = [
     path('admin/', admin.site.urls),
