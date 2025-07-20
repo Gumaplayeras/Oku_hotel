@@ -12,6 +12,7 @@ import Movimientos from './pages/Movimientos';
 import Sidebar from './components/Sidebar/Sidebar';
 import Redes from "./pages/Redes";
 
+
 function App() {
   return (
     <Router>

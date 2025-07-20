@@ -1,46 +1,42 @@
-import React, { useState } from 'react';
-import { Box } from '@mui/material';
-import Sidebar from '../Sidebar/Sidebar'; // Asegúrate que la ruta sea correcta
-import Header from '../Header/Header';   // Asegúrate que la ruta sea correcta
+import React from 'react';
+import { Box, CssBaseline } from '@mui/material';
+import Header from '../Header/Header';
 
 export default function Layout({ children }) {
-  const [isSidebarOpen, setSidebarOpen] = useState(true);
-
-  const toggleSidebar = () => {
-    setSidebarOpen(!isSidebarOpen);
-  };
-
   return (
-    // CONTENEDOR PRINCIPAL - Flexbox
-    <Box sx={{ display: 'flex', minHeight: '100vh', bgcolor: 'background.default' }}>
-      
-      {/* SIDEBAR - Recibe el estado 'isOpen' */}
-      <Sidebar isOpen={isSidebarOpen} />
-
-      {/* CONTENEDOR DERECHO (Header + Contenido) */}
+    <Box sx={{ 
+      display: 'flex', 
+      flexDirection: 'column',
+      minHeight: '100vh', 
+      background: `
+        linear-gradient(135deg, #0f1117 0%, #1a1d29 50%, #0f1117 100%)
+      `,
+      color: '#ffffff',
+      fontFamily: '"Inter", "Segoe UI", "Roboto", "Helvetica", "Arial", sans-serif',
+      position: 'relative',
+    }}>
+      <CssBaseline />
+      <Header />
       <Box 
-        component="div"
-        sx={{
-          flexGrow: 1, // Permite que esta caja ocupe el resto del espacio
-          display: 'flex',
-          flexDirection: 'column',
-          width: '100%', // Necesario para que el flexbox funcione bien
+        component="main" 
+        sx={{ 
+          flexGrow: 1,
+          p: { xs: 2, sm: 3, md: 4 },
+          overflowY: 'auto',
+          position: 'relative',
+          zIndex: 2,
+          '&::before': {
+            content: '""',
+            position: 'absolute',
+            top: 0,
+            left: '10%',
+            right: '10%',
+            height: '1px',
+            background: 'linear-gradient(90deg, transparent, rgba(255,255,255,0.1), transparent)'
+          }
         }}
       >
-        {/* HEADER - Recibe la función para cambiar el estado */}
-        <Header onToggleSidebar={toggleSidebar} />
-        
-        {/* ÁREA DE CONTENIDO PRINCIPAL (donde va el Dashboard, etc.) */}
-        <Box 
-          component="main" 
-          sx={{ 
-            flexGrow: 1, // Ocupa el espacio vertical restante
-            p: { xs: 2, sm: 3 }, // Padding adaptable
-            overflowY: 'auto', // Permite scroll si el contenido es muy largo
-          }}
-        >
-          {children}
-        </Box>
+        {children}
       </Box>
     </Box>
   );
