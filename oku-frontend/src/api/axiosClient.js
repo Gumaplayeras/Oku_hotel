@@ -1,8 +1,9 @@
+// Uses VITE_API_URL from .env for API base URL
 import axios from 'axios';
 import { getAccessToken, getRefreshToken, setTokens, clearTokens } from '../utils/auth';
 
 const axiosClient = axios.create({
-  baseURL: 'http://localhost:8000/api/',
+  baseURL: import.meta.env.VITE_API_URL,
   headers: {
     'Content-Type': 'application/json',
   },
@@ -29,7 +30,7 @@ axiosClient.interceptors.response.use(
       const refreshToken = getRefreshToken();
       if (refreshToken) {
         try {
-          const res = await axios.post('http://localhost:8000/api/token/refresh/', {
+          const res = await axios.post(`${import.meta.env.VITE_API_URL}token/refresh/`, {
             refresh: refreshToken,
           });
 
