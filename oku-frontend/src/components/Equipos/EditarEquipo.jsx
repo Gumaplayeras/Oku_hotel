@@ -12,12 +12,10 @@ import {
   CircularProgress,
   Typography,
   Box,
-  Card,
-  CardContent,
-  Avatar,
+  Paper,
   Chip,
-  Divider,
-  Alert
+  Alert,
+  Fade
 } from '@mui/material';
 import CloseIcon from '@mui/icons-material/Close';
 import EditIcon from '@mui/icons-material/Edit';
@@ -29,6 +27,8 @@ import ComputerIcon from '@mui/icons-material/Computer';
 import PersonIcon from '@mui/icons-material/Person';
 import DescriptionIcon from '@mui/icons-material/Description';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
+import InventoryIcon from '@mui/icons-material/Inventory';
+import InfoIcon from '@mui/icons-material/Info';
 import { getDepartamentos } from '../../api/departamentos';
 import { getUbicaciones } from '../../api/ubicaciones';
 import { getEstados } from '../../api/estados';
@@ -283,12 +283,12 @@ const EditarEquipo = ({ open, handleClose, equipo, onEquipoActualizado }) => {
 
   const getEstadoColor = (estado) => {
     const colors = {
-      'Activo': '#4caf50',
-      'Inactivo': '#f44336',
-      'Mantenimiento': '#ff9800',
-      'Disponible': '#2196f3',
+      'Activo': '#22c55e',
+      'Inactivo': '#ef4444',
+      'Mantenimiento': '#f59e0b',
+      'Disponible': '#3b82f6',
     };
-    return colors[estado] || '#757575';
+    return colors[estado] || '#64748b';
   };
 
   if (!equipo || Object.keys(equipo).length === 0) {
@@ -300,40 +300,39 @@ const EditarEquipo = ({ open, handleClose, equipo, onEquipoActualizado }) => {
         fullWidth
         PaperProps={{
           sx: {
-            borderRadius: 3,
-            background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-            color: 'white'
+            borderRadius: '16px',
+            background: 'rgba(15, 23, 42, 0.95)',
+            backdropFilter: 'blur(20px)',
+            border: '1px solid rgba(71, 85, 105, 0.3)',
+            color: '#f1f5f9'
+          }
+        }}
+        BackdropProps={{
+          sx: {
+            backgroundColor: 'rgba(0, 0, 0, 0.8)'
           }
         }}
       >
-        <DialogTitle sx={{ textAlign: 'center', pb: 3 }}>
-          <Typography variant="h4" component="div" sx={{ fontWeight: 'bold' }}>
-            ✏️ Editar Equipo
+        <DialogContent sx={{ p: 6, textAlign: 'center' }}>
+          <EditIcon sx={{ fontSize: '4rem', color: '#64748b', mb: 2 }} />
+          <Typography variant="h6" sx={{ color: '#f1f5f9', fontWeight: 600 }}>
+            No hay información del equipo disponible para editar
           </Typography>
-          <IconButton
-            aria-label="close"
+          <Button 
             onClick={handleDialogClose}
-            sx={{ 
-              position: 'absolute', 
-              right: 16, 
-              top: 16,
-              color: 'white',
-              backgroundColor: 'rgba(255,255,255,0.1)',
-              '&:hover': { backgroundColor: 'rgba(255,255,255,0.2)' }
+            variant="outlined"
+            sx={{
+              mt: 3,
+              borderColor: 'rgba(71, 85, 105, 0.5)',
+              color: '#94a3b8',
+              '&:hover': {
+                borderColor: '#94a3b8',
+                background: 'rgba(71, 85, 105, 0.1)'
+              }
             }}
           >
-            <CloseIcon />
-          </IconButton>
-        </DialogTitle>
-        <DialogContent dividers sx={{ backgroundColor: 'white', color: 'black' }}>
-          <Box display="flex" justifyContent="center" alignItems="center" p={6}>
-            <Box textAlign="center">
-              <EditIcon sx={{ fontSize: 64, color: '#ccc', mb: 2 }} />
-              <Typography variant="h6" color="textSecondary">
-                No hay información del equipo disponible para editar
-              </Typography>
-            </Box>
-          </Box>
+            Cerrar
+          </Button>
         </DialogContent>
       </Dialog>
     );
@@ -348,402 +347,520 @@ const EditarEquipo = ({ open, handleClose, equipo, onEquipoActualizado }) => {
       disableEscapeKeyDown={isSubmitting}
       PaperProps={{
         sx: {
-          borderRadius: 3,
-          background: 'linear-gradient(135deg, #2c3e50 0%, #34495e 100%)',
-          maxHeight: '90vh'
+          borderRadius: '16px',
+          background: 'rgba(15, 23, 42, 0.95)',
+          backdropFilter: 'blur(20px)',
+          border: '1px solid rgba(71, 85, 105, 0.3)',
+          maxHeight: '90vh',
+          color: '#f1f5f9'
         }
       }}
       BackdropProps={{
         sx: {
-          backgroundColor: 'rgba(0, 0, 0, 0.7)'
+          backgroundColor: 'rgba(0, 0, 0, 0.8)'
         }
       }}
     >
-      <DialogTitle sx={{ color: 'white', pb: 2 }}>
-        <Box display="flex" alignItems="center" gap={2}>
-          <Avatar sx={{ bgcolor: 'rgba(255,255,255,0.2)' }}>
-            <EditIcon />
-          </Avatar>
-          <Box>
-            <Typography variant="h4" component="div" sx={{ fontWeight: 'bold' }}>
-              Editar Equipo
-            </Typography>
-            <Typography variant="subtitle1" sx={{ opacity: 0.9 }}>
-              {equipo.nombre} - ID: {equipo.id_inventario}
-            </Typography>
+      {/* Header */}
+      <DialogTitle sx={{ p: 4, pb: 2 }}>
+        <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 3 }}>
+            <Box sx={{
+              width: 56,
+              height: 56,
+              borderRadius: '14px',
+              background: 'linear-gradient(135deg, #f59e0b, #d97706)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              boxShadow: '0 8px 20px rgba(245, 158, 11, 0.3)'
+            }}>
+              <EditIcon sx={{ color: '#ffffff', fontSize: '1.75rem' }} />
+            </Box>
+            <Box>
+              <Typography 
+                variant="h4" 
+                sx={{ 
+                  color: '#ffffff',
+                  fontWeight: 600,
+                  fontSize: '1.875rem',
+                  mb: 0.5,
+                  letterSpacing: '-0.025em'
+                }}
+              >
+                Editar Equipo
+              </Typography>
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                <InventoryIcon sx={{ color: '#94a3b8', fontSize: '1.1rem' }} />
+                <Typography 
+                  variant="subtitle1" 
+                  sx={{ 
+                    color: '#94a3b8',
+                    fontFamily: 'monospace',
+                    fontSize: '1rem'
+                  }}
+                >
+                  {equipo.nombre} - ID: {equipo.id_inventario}
+                </Typography>
+              </Box>
+            </Box>
           </Box>
+          
+          <IconButton
+            onClick={handleDialogClose}
+            disabled={isSubmitting}
+            sx={{ 
+              color: '#94a3b8',
+              backgroundColor: 'rgba(71, 85, 105, 0.3)',
+              border: '1px solid rgba(71, 85, 105, 0.3)',
+              borderRadius: '12px',
+              width: 48,
+              height: 48,
+              '&:hover': { 
+                backgroundColor: 'rgba(71, 85, 105, 0.5)',
+                borderColor: 'rgba(148, 163, 184, 0.5)',
+                color: '#f1f5f9'
+              }
+            }}
+          >
+            <CloseIcon />
+          </IconButton>
         </Box>
-        <IconButton
-          aria-label="close"
-          onClick={handleDialogClose}
-          disabled={isSubmitting}
-          sx={{ 
-            position: 'absolute', 
-            right: 16, 
-            top: 16,
-            color: 'white',
-            backgroundColor: 'rgba(255,255,255,0.1)',
-            '&:hover': { backgroundColor: 'rgba(255,255,255,0.2)' }
-          }}
-        >
-          <CloseIcon />
-        </IconButton>
       </DialogTitle>
       
-      <DialogContent 
-        dividers 
-        sx={{ 
-          backgroundColor: '#1a1a1a', 
-          p: 3,
-          '&::-webkit-scrollbar': {
-            width: '8px',
-          },
-          '&::-webkit-scrollbar-track': {
-            background: '#2c2c2c',
-            borderRadius: '10px',
-          },
-          '&::-webkit-scrollbar-thumb': {
-            background: '#555',
-            borderRadius: '10px',
-          },
-        }}
-      >
-        <Box display="flex" flexDirection="column" gap={3}>
+      <DialogContent sx={{ p: 4, pt: 2 }}>
+        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+          
           {/* Información actual del equipo */}
-          <Card elevation={0} sx={{ borderRadius: 3, overflow: 'hidden' }}>
-            <Box sx={{ 
-              background: 'linear-gradient(90deg, #1e3c72 0%, #2a5298 100%)', 
-              p: 2, 
-              color: 'white' 
-            }}>
-              <Typography variant="h6" fontWeight="bold" display="flex" alignItems="center" gap={1}>
-                <ComputerIcon /> Información Actual
-              </Typography>
-            </Box>
-            <CardContent sx={{ p: 3, bgcolor: '#2c2c2c', color: 'white' }}>
-              <Grid container spacing={3}>
-                <Grid item xs={12} sm={6}>
-                  <Box mb={2}>
-                    <Typography variant="subtitle2" color="#b0b0b0" sx={{ fontWeight: 'bold', mb: 0.5 }}>
-                      Departamento Actual
-                    </Typography>
-                    <Chip
-                      label={equipo.departamento?.nombre || 'No especificado'}
-                      sx={{
-                        bgcolor: '#1e3c72',
-                        color: 'white',
-                        fontWeight: 'bold'
-                      }}
-                    />
-                  </Box>
-                  <Box mb={2}>
-                    <Typography variant="subtitle2" color="#b0b0b0" sx={{ fontWeight: 'bold', mb: 0.5 }}>
-                      Ubicación Actual
-                    </Typography>
-                    <Chip
-                      label={equipo.ubicacion?.fase || 'No especificado'}
-                      sx={{
-                        bgcolor: '#134e5e',
-                        color: 'white',
-                        fontWeight: 'bold'
-                      }}
-                    />
-                  </Box>
-                </Grid>
-                <Grid item xs={12} sm={6}>
-                  <Box mb={2}>
-                    <Typography variant="subtitle2" color="#b0b0b0" sx={{ fontWeight: 'bold', mb: 0.5 }}>
-                      Estado Actual
-                    </Typography>
-                    <Chip
-                      label={equipo.estado?.nombre || 'Sin estado'}
-                      sx={{
-                        bgcolor: getEstadoColor(equipo.estado?.nombre),
-                        color: 'white',
-                        fontWeight: 'bold'
-                      }}
-                    />
-                  </Box>
-                  <Box mb={2}>
-                    <Typography variant="subtitle2" color="#b0b0b0" sx={{ fontWeight: 'bold', mb: 0.5 }}>
-                      Asignado a
-                    </Typography>
-                    <Chip
-                      label={equipo.empleado?.nombre || 'No asignado'}
-                      sx={{
-                        bgcolor: '#6a1b9a',
-                        color: 'white',
-                        fontWeight: 'bold'
-                      }}
-                    />
-                  </Box>
-                </Grid>
+          <Paper sx={{
+            p: 3,
+            background: 'rgba(30, 41, 59, 0.6)',
+            border: '1px solid rgba(71, 85, 105, 0.3)',
+            borderRadius: '16px',
+            backdropFilter: 'blur(20px)'
+          }}>
+            <Typography 
+              variant="h6" 
+              sx={{ 
+                color: '#f1f5f9', 
+                mb: 3, 
+                fontWeight: 600,
+                display: 'flex',
+                alignItems: 'center',
+                gap: 1
+              }}
+            >
+              <InfoIcon sx={{ color: '#3b82f6' }} />
+              Información Actual
+            </Typography>
+            
+            <Grid container spacing={3}>
+              <Grid item xs={12} sm={6}>
+                <Box sx={{ mb: 3 }}>
+                  <Typography variant="caption" sx={{ 
+                    color: '#94a3b8',
+                    fontWeight: 500,
+                    fontSize: '0.875rem',
+                    letterSpacing: '0.05em',
+                    textTransform: 'uppercase',
+                    display: 'block',
+                    mb: 1
+                  }}>
+                    Departamento Actual
+                  </Typography>
+                  <Chip
+                    label={equipo.departamento?.nombre || 'No especificado'}
+                    sx={{
+                      backgroundColor: 'rgba(59, 130, 246, 0.2)',
+                      color: '#60a5fa',
+                      border: '1px solid rgba(59, 130, 246, 0.3)',
+                      fontWeight: 500
+                    }}
+                  />
+                </Box>
+                
+                <Box sx={{ mb: 3 }}>
+                  <Typography variant="caption" sx={{ 
+                    color: '#94a3b8',
+                    fontWeight: 500,
+                    fontSize: '0.875rem',
+                    letterSpacing: '0.05em',
+                    textTransform: 'uppercase',
+                    display: 'block',
+                    mb: 1
+                  }}>
+                    Estado Actual
+                  </Typography>
+                  <Chip
+                    label={equipo.estado?.nombre || 'Sin estado'}
+                    sx={{
+                      backgroundColor: `${getEstadoColor(equipo.estado?.nombre)}20`,
+                      color: getEstadoColor(equipo.estado?.nombre),
+                      border: `1px solid ${getEstadoColor(equipo.estado?.nombre)}40`,
+                      fontWeight: 500
+                    }}
+                  />
+                </Box>
               </Grid>
-            </CardContent>
-          </Card>
+
+              <Grid item xs={12} sm={6}>
+                <Box sx={{ mb: 3 }}>
+                  <Typography variant="caption" sx={{ 
+                    color: '#94a3b8',
+                    fontWeight: 500,
+                    fontSize: '0.875rem',
+                    letterSpacing: '0.05em',
+                    textTransform: 'uppercase',
+                    display: 'block',
+                    mb: 1
+                  }}>
+                    Ubicación Actual
+                  </Typography>
+                  <Chip
+                    label={equipo.ubicacion?.fase || 'No especificado'}
+                    sx={{
+                      backgroundColor: 'rgba(139, 92, 246, 0.2)',
+                      color: '#a78bfa',
+                      border: '1px solid rgba(139, 92, 246, 0.3)',
+                      fontWeight: 500
+                    }}
+                  />
+                </Box>
+                
+                <Box>
+                  <Typography variant="caption" sx={{ 
+                    color: '#94a3b8',
+                    fontWeight: 500,
+                    fontSize: '0.875rem',
+                    letterSpacing: '0.05em',
+                    textTransform: 'uppercase',
+                    display: 'block',
+                    mb: 1
+                  }}>
+                    Asignado a
+                  </Typography>
+                  <Chip
+                    label={equipo.empleado?.nombre || 'No asignado'}
+                    sx={{
+                      backgroundColor: 'rgba(34, 197, 94, 0.2)',
+                      color: '#4ade80',
+                      border: '1px solid rgba(34, 197, 94, 0.3)',
+                      fontWeight: 500
+                    }}
+                  />
+                </Box>
+              </Grid>
+            </Grid>
+          </Paper>
 
           {/* Formulario de edición */}
-          <Card elevation={0} sx={{ borderRadius: 3, overflow: 'hidden' }}>
-            <Box sx={{ 
-              background: 'linear-gradient(90deg, #b92b27 0%, #8e2de2 100%)', 
-              p: 2, 
-              color: 'white' 
-            }}>
-              <Typography variant="h6" fontWeight="bold" display="flex" alignItems="center" gap={1}>
-                <EditIcon /> Modificar Información
-              </Typography>
-            </Box>
-            <CardContent sx={{ p: 3, bgcolor: '#2c2c2c' }}>
-              {loadingSelectors && (
-                <Box display="flex" justifyContent="center" alignItems="center" py={3} mb={3}>
-                  <CircularProgress size={32} sx={{ color: '#2a5298', mr: 2 }} />
-                  <Typography variant="body1" sx={{ color: '#b0b0b0' }}>
-                    Cargando opciones...
+          <Paper sx={{
+            p: 3,
+            background: 'rgba(30, 41, 59, 0.6)',
+            border: '1px solid rgba(71, 85, 105, 0.3)',
+            borderRadius: '16px',
+            backdropFilter: 'blur(20px)'
+          }}>
+            <Typography 
+              variant="h6" 
+              sx={{ 
+                color: '#f1f5f9', 
+                mb: 3, 
+                fontWeight: 600,
+                display: 'flex',
+                alignItems: 'center',
+                gap: 1
+              }}
+            >
+              <EditIcon sx={{ color: '#f59e0b' }} />
+              Modificar Información
+            </Typography>
+
+            {loadingSelectors && (
+              <Fade in timeout={300}>
+                <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', py: 4, mb: 3 }}>
+                  <Box sx={{ textAlign: 'center' }}>
+                    <CircularProgress size={40} sx={{ color: '#f59e0b', mb: 2 }} />
+                    <Typography variant="body1" sx={{ color: '#94a3b8' }}>
+                      Cargando opciones...
+                    </Typography>
+                  </Box>
+                </Box>
+              </Fade>
+            )}
+
+            <Grid container spacing={3}>
+              <Grid item xs={12} md={6}>
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 2 }}>
+                  <BusinessIcon sx={{ color: '#94a3b8', fontSize: '1.2rem' }} />
+                  <Typography variant="subtitle2" sx={{ 
+                    color: '#94a3b8', 
+                    fontWeight: 600,
+                    textTransform: 'uppercase',
+                    letterSpacing: '0.05em',
+                    fontSize: '0.875rem'
+                  }}>
+                    Departamento
                   </Typography>
                 </Box>
-              )}
-
-              <Grid container spacing={3}>
-                <Grid item xs={12} md={6}>
-                  <Box display="flex" alignItems="center" gap={1} mb={1}>
-                    <BusinessIcon sx={{ color: '#b0b0b0', fontSize: 20 }} />
-                    <Typography variant="subtitle2" sx={{ color: '#b0b0b0', fontWeight: 'bold' }}>
-                      Departamento
-                    </Typography>
-                  </Box>
-                  <TextField
-                    select 
-                    fullWidth 
-                    name="departamento"
-                    value={formData.departamento}
-                    onChange={handleChange}
-                    disabled={isSubmitting || loadingSelectors}
-                    sx={{
-                      '& .MuiInputLabel-root': {
-                        color: '#b0b0b0',
+                <TextField
+                  select 
+                  fullWidth 
+                  name="departamento"
+                  value={formData.departamento}
+                  onChange={handleChange}
+                  disabled={isSubmitting || loadingSelectors}
+                  sx={{
+                    '& .MuiOutlinedInput-root': {
+                      backgroundColor: 'rgba(51, 65, 85, 0.3)',
+                      borderRadius: '12px',
+                      color: '#f1f5f9',
+                      '& fieldset': {
+                        borderColor: 'rgba(71, 85, 105, 0.3)',
                       },
-                      '& .MuiInputLabel-root.Mui-focused': {
-                        color: '#2a5298',
+                      '&:hover fieldset': {
+                        borderColor: 'rgba(96, 165, 250, 0.5)',
                       },
-                      '& .MuiOutlinedInput-root': {
-                        borderRadius: 2,
-                        backgroundColor: '#404040',
-                        color: 'white',
-                        '& fieldset': {
-                          borderColor: '#555',
-                        },
-                        '&:hover fieldset': {
-                          borderColor: '#2a5298',
-                        },
-                        '&.Mui-focused fieldset': {
-                          borderColor: '#2a5298',
-                        },
+                      '&.Mui-focused fieldset': {
+                        borderColor: '#60a5fa',
                       },
-                      '& .MuiSelect-icon': {
-                        color: '#b0b0b0',
-                      },
-                    }}
-                  >
-                    {departamentos.map(dep => (
-                      <MenuItem key={dep.id} value={dep.id}>
-                        {dep.nombre}
-                      </MenuItem>
-                    ))}
-                  </TextField>
-                </Grid>
-                
-                <Grid item xs={12} md={6}>
-                  <Box display="flex" alignItems="center" gap={1} mb={1}>
-                    <LocationOnIcon sx={{ color: '#b0b0b0', fontSize: 20 }} />
-                    <Typography variant="subtitle2" sx={{ color: '#b0b0b0', fontWeight: 'bold' }}>
-                      Ubicación
-                    </Typography>
-                  </Box>
-                  <TextField
-                    select 
-                    fullWidth 
-                    name="ubicacion"
-                    value={formData.ubicacion}
-                    onChange={handleChange}
-                    disabled={isSubmitting || loadingSelectors}
-                    sx={{
-                      '& .MuiInputLabel-root': {
-                        color: '#b0b0b0',
-                      },
-                      '& .MuiInputLabel-root.Mui-focused': {
-                        color: '#2a5298',
-                      },
-                      '& .MuiOutlinedInput-root': {
-                        borderRadius: 2,
-                        backgroundColor: '#404040',
-                        color: 'white',
-                        '& fieldset': {
-                          borderColor: '#555',
-                        },
-                        '&:hover fieldset': {
-                          borderColor: '#2a5298',
-                        },
-                        '&.Mui-focused fieldset': {
-                          borderColor: '#2a5298',
-                        },
-                      },
-                      '& .MuiSelect-icon': {
-                        color: '#b0b0b0',
-                      },
-                    }}
-                  >
-                    {ubicaciones.map(ub => (
-                      <MenuItem key={ub.id} value={ub.id}>
-                        {ub.fase}
-                      </MenuItem>
-                    ))}
-                  </TextField>
-                </Grid>
-                
-                <Grid item xs={12} md={6}>
-                  <Box display="flex" alignItems="center" gap={1} mb={1}>
-                    <CheckCircleIcon sx={{ color: '#b0b0b0', fontSize: 20 }} />
-                    <Typography variant="subtitle2" sx={{ color: '#b0b0b0', fontWeight: 'bold' }}>
-                      Estado
-                    </Typography>
-                  </Box>
-                  <TextField
-                    select 
-                    fullWidth 
-                    name="estado"
-                    value={formData.estado}
-                    onChange={handleChange}
-                    disabled={isSubmitting || loadingSelectors}
-                    sx={{
-                      '& .MuiInputLabel-root': {
-                        color: '#b0b0b0',
-                      },
-                      '& .MuiInputLabel-root.Mui-focused': {
-                        color: '#2a5298',
-                      },
-                      '& .MuiOutlinedInput-root': {
-                        borderRadius: 2,
-                        backgroundColor: '#404040',
-                        color: 'white',
-                        '& fieldset': {
-                          borderColor: '#555',
-                        },
-                        '&:hover fieldset': {
-                          borderColor: '#2a5298',
-                        },
-                        '&.Mui-focused fieldset': {
-                          borderColor: '#2a5298',
-                        },
-                      },
-                      '& .MuiSelect-icon': {
-                        color: '#b0b0b0',
-                      },
-                    }}
-                  >
-                    {estados.map(est => (
-                      <MenuItem key={est.id} value={est.id}>
-                        {est.nombre}
-                      </MenuItem>
-                    ))}
-                  </TextField>
-                </Grid>
-                
-                <Grid item xs={12} md={6}>
-                  <Box display="flex" alignItems="center" gap={1} mb={1}>
-                    <PersonIcon sx={{ color: '#b0b0b0', fontSize: 20 }} />
-                    <Typography variant="subtitle2" sx={{ color: '#b0b0b0', fontWeight: 'bold' }}>
-                      Asignado a (Solo lectura)
-                    </Typography>
-                  </Box>
-                  <TextField
-                    fullWidth
-                    value={equipo?.empleado?.nombre || 'No asignado'}
-                    InputProps={{ readOnly: true }}
-                    disabled={true}
-                    sx={{
-                      '& .MuiOutlinedInput-root': {
-                        borderRadius: 2,
-                        backgroundColor: '#333333',
-                        color: '#b0b0b0',
-                        '& fieldset': {
-                          borderColor: '#444',
-                        },
-                      },
-                    }}
-                  />
-                </Grid>
-                
-                <Grid item xs={12}>
-                  <Box display="flex" alignItems="center" gap={1} mb={1}>
-                    <DescriptionIcon sx={{ color: '#b0b0b0', fontSize: 20 }} />
-                    <Typography variant="subtitle2" sx={{ color: '#b0b0b0', fontWeight: 'bold' }}>
-                      Motivo del cambio
-                    </Typography>
-                  </Box>
-                  <TextField
-                    fullWidth
-                    multiline
-                    rows={3}
-                    name="motivo"
-                    value={formData.motivo}
-                    onChange={handleChange}
-                    disabled={isSubmitting}
-                    placeholder="Describe el motivo de los cambios..."
-                    sx={{
-                      '& .MuiOutlinedInput-root': {
-                        borderRadius: 2,
-                        backgroundColor: '#404040',
-                        color: 'white',
-                        '& fieldset': {
-                          borderColor: '#555',
-                        },
-                        '&:hover fieldset': {
-                          borderColor: '#2a5298',
-                        },
-                        '&.Mui-focused fieldset': {
-                          borderColor: '#2a5298',
-                        },
-                      },
-                    }}
-                  />
-                </Grid>
+                    },
+                    '& .MuiSelect-icon': {
+                      color: '#94a3b8',
+                    },
+                  }}
+                >
+                  {departamentos.map(dep => (
+                    <MenuItem key={dep.id} value={dep.id}>
+                      {dep.nombre}
+                    </MenuItem>
+                  ))}
+                </TextField>
               </Grid>
+              
+              <Grid item xs={12} md={6}>
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 2 }}>
+                  <LocationOnIcon sx={{ color: '#94a3b8', fontSize: '1.2rem' }} />
+                  <Typography variant="subtitle2" sx={{ 
+                    color: '#94a3b8', 
+                    fontWeight: 600,
+                    textTransform: 'uppercase',
+                    letterSpacing: '0.05em',
+                    fontSize: '0.875rem'
+                  }}>
+                    Ubicación
+                  </Typography>
+                </Box>
+                <TextField
+                  select 
+                  fullWidth 
+                  name="ubicacion"
+                  value={formData.ubicacion}
+                  onChange={handleChange}
+                  disabled={isSubmitting || loadingSelectors}
+                  sx={{
+                    '& .MuiOutlinedInput-root': {
+                      backgroundColor: 'rgba(51, 65, 85, 0.3)',
+                      borderRadius: '12px',
+                      color: '#f1f5f9',
+                      '& fieldset': {
+                        borderColor: 'rgba(71, 85, 105, 0.3)',
+                      },
+                      '&:hover fieldset': {
+                        borderColor: 'rgba(96, 165, 250, 0.5)',
+                      },
+                      '&.Mui-focused fieldset': {
+                        borderColor: '#60a5fa',
+                      },
+                    },
+                    '& .MuiSelect-icon': {
+                      color: '#94a3b8',
+                    },
+                  }}
+                >
+                  {ubicaciones.map(ub => (
+                    <MenuItem key={ub.id} value={ub.id}>
+                      {ub.fase}
+                    </MenuItem>
+                  ))}
+                </TextField>
+              </Grid>
+              
+              <Grid item xs={12} md={6}>
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 2 }}>
+                  <CheckCircleIcon sx={{ color: '#94a3b8', fontSize: '1.2rem' }} />
+                  <Typography variant="subtitle2" sx={{ 
+                    color: '#94a3b8', 
+                    fontWeight: 600,
+                    textTransform: 'uppercase',
+                    letterSpacing: '0.05em',
+                    fontSize: '0.875rem'
+                  }}>
+                    Estado
+                  </Typography>
+                </Box>
+                <TextField
+                  select 
+                  fullWidth 
+                  name="estado"
+                  value={formData.estado}
+                  onChange={handleChange}
+                  disabled={isSubmitting || loadingSelectors}
+                  sx={{
+                    '& .MuiOutlinedInput-root': {
+                      backgroundColor: 'rgba(51, 65, 85, 0.3)',
+                      borderRadius: '12px',
+                      color: '#f1f5f9',
+                      '& fieldset': {
+                        borderColor: 'rgba(71, 85, 105, 0.3)',
+                      },
+                      '&:hover fieldset': {
+                        borderColor: 'rgba(96, 165, 250, 0.5)',
+                      },
+                      '&.Mui-focused fieldset': {
+                        borderColor: '#60a5fa',
+                      },
+                    },
+                    '& .MuiSelect-icon': {
+                      color: '#94a3b8',
+                    },
+                  }}
+                >
+                  {estados.map(est => (
+                    <MenuItem key={est.id} value={est.id}>
+                      {est.nombre}
+                    </MenuItem>
+                  ))}
+                </TextField>
+              </Grid>
+              
+              <Grid item xs={12} md={6}>
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 2 }}>
+                  <PersonIcon sx={{ color: '#94a3b8', fontSize: '1.2rem' }} />
+                  <Typography variant="subtitle2" sx={{ 
+                    color: '#94a3b8', 
+                    fontWeight: 600,
+                    textTransform: 'uppercase',
+                    letterSpacing: '0.05em',
+                    fontSize: '0.875rem'
+                  }}>
+                    Asignado a (Solo lectura)
+                  </Typography>
+                </Box>
+                <TextField
+                  fullWidth
+                  value={equipo?.empleado?.nombre || 'No asignado'}
+                  InputProps={{ readOnly: true }}
+                  disabled={true}
+                  sx={{
+                    '& .MuiOutlinedInput-root': {
+                      backgroundColor: 'rgba(51, 65, 85, 0.2)',
+                      borderRadius: '12px',
+                      color: '#64748b',
+                      '& fieldset': {
+                        borderColor: 'rgba(71, 85, 105, 0.2)',
+                      },
+                    },
+                  }}
+                />
+              </Grid>
+              
+              <Grid item xs={12}>
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 2 }}>
+                  <DescriptionIcon sx={{ color: '#94a3b8', fontSize: '1.2rem' }} />
+                  <Typography variant="subtitle2" sx={{ 
+                    color: '#94a3b8', 
+                    fontWeight: 600,
+                    textTransform: 'uppercase',
+                    letterSpacing: '0.05em',
+                    fontSize: '0.875rem'
+                  }}>
+                    Motivo del cambio
+                  </Typography>
+                </Box>
+                <TextField
+                  fullWidth
+                  multiline
+                  rows={3}
+                  name="motivo"
+                  value={formData.motivo}
+                  onChange={handleChange}
+                  disabled={isSubmitting}
+                  placeholder="Describe el motivo de los cambios..."
+                  sx={{
+                    '& .MuiOutlinedInput-root': {
+                      backgroundColor: 'rgba(51, 65, 85, 0.3)',
+                      borderRadius: '12px',
+                      color: '#f1f5f9',
+                      '& fieldset': {
+                        borderColor: 'rgba(71, 85, 105, 0.3)',
+                      },
+                      '&:hover fieldset': {
+                        borderColor: 'rgba(96, 165, 250, 0.5)',
+                      },
+                      '&.Mui-focused fieldset': {
+                        borderColor: '#60a5fa',
+                      },
+                    },
+                    '& .MuiInputBase-input::placeholder': {
+                      color: '#64748b',
+                      opacity: 1,
+                    },
+                  }}
+                />
+              </Grid>
+            </Grid>
 
-              {hasChanges && (
-                <Box mt={3}>
+            {hasChanges && (
+              <Fade in timeout={300}>
+                <Box sx={{ mt: 3 }}>
                   <Alert 
                     severity="info" 
                     sx={{ 
-                      backgroundColor: 'rgba(42, 82, 152, 0.1)',
-                      color: '#2a5298',
+                      backgroundColor: 'rgba(59, 130, 246, 0.1)',
+                      border: '1px solid rgba(59, 130, 246, 0.3)',
+                      borderRadius: '12px',
+                      color: '#60a5fa',
                       '& .MuiAlert-icon': {
-                        color: '#2a5298'
+                        color: '#60a5fa'
                       }
                     }}
                   >
                     Se han detectado cambios. Recuerda guardar antes de cerrar.
                   </Alert>
                 </Box>
-              )}
-            </CardContent>
-          </Card>
+              </Fade>
+            )}
+          </Paper>
         </Box>
       </DialogContent>
       
-      <DialogActions sx={{ backgroundColor: '#1a1a1a', p: 3 }}>
+      <DialogActions sx={{ 
+        p: 4, 
+        pt: 0,
+        gap: 2,
+        justifyContent: 'flex-end'
+      }}>
         <Button 
           onClick={handleDialogClose}
           disabled={isSubmitting}
           startIcon={<CancelIcon />}
+          variant="outlined"
           sx={{
-            color: '#b0b0b0',
-            borderColor: '#555',
+            borderColor: 'rgba(71, 85, 105, 0.5)',
+            color: '#94a3b8',
+            fontWeight: 600,
+            borderRadius: '12px',
+            textTransform: 'none',
+            minWidth: '120px',
+            height: '44px',
+            transition: 'all 0.3s ease',
             '&:hover': {
-              borderColor: '#777',
-              backgroundColor: 'rgba(255,255,255,0.05)'
+              borderColor: '#94a3b8',
+              background: 'rgba(71, 85, 105, 0.1)',
+              color: '#cbd5e1'
             }
           }}
-          variant="outlined"
         >
           Cancelar
         </Button>
@@ -752,19 +869,35 @@ const EditarEquipo = ({ open, handleClose, equipo, onEquipoActualizado }) => {
           variant="contained" 
           onClick={handleSubmit}
           disabled={isSubmitting || !hasChanges || loadingSelectors}
-          startIcon={isSubmitting ? <CircularProgress size={16} /> : <SaveIcon />}
+          startIcon={isSubmitting ? <CircularProgress size={16} sx={{ color: '#ffffff' }} /> : <SaveIcon />}
           sx={{
+            fontWeight: 600,
+            borderRadius: '12px',
+            textTransform: 'none',
+            minWidth: '140px',
+            height: '44px',
+            fontSize: '0.95rem',
             background: hasChanges && !isSubmitting 
-              ? 'linear-gradient(45deg, #2a5298 0%, #1e3c72 100%)'
-              : 'linear-gradient(45deg, #666 0%, #555 100%)',
+              ? 'linear-gradient(135deg, #f59e0b, #d97706)'
+              : 'linear-gradient(135deg, #64748b, #475569)',
+            boxShadow: hasChanges && !isSubmitting
+              ? '0 4px 14px rgba(245, 158, 11, 0.3)'
+              : '0 2px 8px rgba(100, 116, 139, 0.3)',
+            color: '#ffffff',
+            transition: 'all 0.3s ease',
             '&:hover': {
               background: hasChanges && !isSubmitting 
-                ? 'linear-gradient(45deg, #1e3c72 0%, #2a5298 100%)'
-                : 'linear-gradient(45deg, #666 0%, #555 100%)',
+                ? 'linear-gradient(135deg, #d97706, #b45309)'
+                : 'linear-gradient(135deg, #64748b, #475569)',
+              transform: hasChanges && !isSubmitting ? 'translateY(-1px)' : 'none',
+              boxShadow: hasChanges && !isSubmitting
+                ? '0 6px 18px rgba(245, 158, 11, 0.4)'
+                : '0 2px 8px rgba(100, 116, 139, 0.3)',
             },
             '&:disabled': {
-              background: 'linear-gradient(45deg, #666 0%, #555 100%)',
-              color: '#999'
+              background: 'linear-gradient(135deg, #64748b, #475569)',
+              color: '#94a3b8',
+              boxShadow: 'none'
             }
           }}
         >
