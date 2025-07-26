@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import {
   Typography, Container, Box, Paper, Button, CircularProgress,
-  LinearProgress, Fade, Alert, useTheme
+  LinearProgress, Fade, Alert
 } from '@mui/material';
 import {
   Refresh as RefreshIcon,
@@ -10,33 +10,130 @@ import {
   CheckCircle as CheckIcon,
   Warning as WarningIcon,
   Error as ErrorIcon,
+  Router as RouterIcon,
+  RestartAlt as RestartIcon
 } from '@mui/icons-material';
 import { DataGrid } from '@mui/x-data-grid';
 import { getSwitches, reiniciarSwitch } from '../api/switches';
-import { styled } from '@mui/material/styles';
-
-
 
 const StatCard = ({ title, value, icon, color, subtitle }) => {
-  const theme = useTheme();
   return (
     <Paper sx={{
-      p: 3, flex: '1 1 200px', minWidth: 200, borderRadius: 3,
-      color: theme.palette.text.primary,  // <-- Texto claro
-      background: `linear-gradient(135deg, ${color}15, ${color}05)`,
-      border: `1px solid ${color}30`, transition: 'transform 0.3s ease',
-      '&:hover': { transform: 'translateY(-4px)' }
+      p: 3, 
+      flex: '1 1 200px', 
+      minWidth: 200, 
+      height: '100%',
+      background: 'rgba(30, 41, 59, 0.6)',
+      border: '1px solid rgba(71, 85, 105, 0.3)',
+      borderRadius: '16px',
+      position: 'relative',
+      overflow: 'hidden',
+      backdropFilter: 'blur(20px)',
+      transition: 'all 0.4s cubic-bezier(0.4, 0, 0.2, 1)',
+      cursor: 'pointer',
+      '&:hover': {
+        transform: 'translateY(-4px) scale(1.02)',
+        background: 'rgba(30, 41, 59, 0.8)',
+        border: `1px solid ${color}40`,
+        boxShadow: `0 20px 40px -12px ${color}20`,
+        '& .stat-icon': {
+          transform: 'scale(1.1)',
+          backgroundColor: color,
+          color: '#ffffff',
+          boxShadow: `0 8px 20px ${color}40`
+        },
+        '& .stat-value': {
+          color: '#ffffff'
+        },
+        '& .stat-title': {
+          color: '#e2e8f0'
+        }
+      },
+      '&::before': {
+        content: '""',
+        position: 'absolute',
+        top: 0,
+        left: 0,
+        right: 0,
+        height: '2px',
+        background: `linear-gradient(90deg, ${color}, ${color}80, transparent)`,
+      },
+      '&::after': {
+        content: '""',
+        position: 'absolute',
+        top: -2,
+        right: -2,
+        width: '4px',
+        height: '40px',
+        background: `linear-gradient(180deg, ${color}60, transparent)`,
+        borderRadius: '2px'
+      }
     }}>
-      <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-        <Box sx={{
-          p: 2, borderRadius: 2, bgcolor: `${color}20`, color, display: 'flex', alignItems: 'center'
-        }}>
-          {icon}
-        </Box>
+      <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
         <Box>
-          <Typography variant="h4" sx={{ fontWeight: 700, color }}>{value}</Typography>
-          <Typography variant="subtitle1" sx={{ fontWeight: 600, color: 'text.primary' }}>{title}</Typography>
-          <Typography variant="caption" color="text.secondary">{subtitle}</Typography>
+          <Typography 
+            variant="caption" 
+            className="stat-title"
+            sx={{ 
+              color: '#94a3b8',
+              fontWeight: 500,
+              fontSize: '0.875rem',
+              mb: 1.5,
+              letterSpacing: '0.05em',
+              textTransform: 'uppercase',
+              transition: 'color 0.3s ease',
+              display: 'block'
+            }}
+          >
+            {title}
+          </Typography>
+          <Typography 
+            variant="h3" 
+            className="stat-value"
+            sx={{ 
+              color: '#f1f5f9',
+              fontWeight: 700,
+              fontSize: '2.25rem',
+              transition: 'color 0.3s ease',
+              fontFamily: '"Inter", sans-serif',
+              lineHeight: 1.1,
+              mb: 0.5
+            }}
+          >
+            {value}
+          </Typography>
+          <Typography 
+            variant="body2" 
+            sx={{ 
+              color: '#64748b',
+              fontSize: '0.8rem',
+              lineHeight: 1.4
+            }}
+          >
+            {subtitle}
+          </Typography>
+        </Box>
+        
+        <Box 
+          className="stat-icon"
+          sx={{
+            width: 60, 
+            height: 60, 
+            borderRadius: '14px', 
+            display: 'flex', 
+            alignItems: 'center',
+            justifyContent: 'center', 
+            backgroundColor: `${color}15`,
+            color: color,
+            border: `1px solid ${color}20`,
+            transition: 'all 0.4s cubic-bezier(0.4, 0, 0.2, 1)',
+            '& svg': {
+              fontSize: '1.75rem',
+              transition: 'all 0.3s ease'
+            }
+          }}
+        >
+          {icon}
         </Box>
       </Box>
     </Paper>
@@ -44,7 +141,6 @@ const StatCard = ({ title, value, icon, color, subtitle }) => {
 };
 
 const Redes = () => {
-  const theme = useTheme();
   const [switches, setSwitches] = useState([]);
   const [loading, setLoading] = useState(true);
   const [restarting, setRestarting] = useState({});
@@ -121,8 +217,6 @@ const Redes = () => {
     }
   };
 
-  
-
   // ------------- Estadísticas ----------------
   const totalSwitches = switches.length;
   const onlineSwitches = switches.filter(sw => getSwitchStatus(sw) === 'online').length;
@@ -131,32 +225,122 @@ const Redes = () => {
 
   // ------------- Columnas DataGrid -------------
   const columns = [
-    { field: 'nombre', headerName: 'Nombre', flex: 1, minWidth: 130 },
-    { field: 'marca', headerName: 'Marca', flex: 1, minWidth: 90 },
-    { field: 'ip', headerName: 'IP', flex: 1, minWidth: 120 },
-    { field: 'planta', headerName: 'Planta', flex: 1, minWidth: 90 },
-    { field: 'lugar', headerName: 'Ubicación', flex: 1, minWidth: 110 },
-    { field: 'mac', headerName: 'MAC', flex: 1, minWidth: 150 },
+    { 
+      field: 'nombre', 
+      headerName: 'Nombre', 
+      flex: 1, 
+      minWidth: 130,
+      renderCell: (params) => (
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+          <RouterIcon sx={{ color: '#64748b', fontSize: '1.1rem' }} />
+          <Typography sx={{ fontWeight: 500, color: '#f1f5f9' }}>
+            {params.value}
+          </Typography>
+        </Box>
+      )
+    },
+    { 
+      field: 'marca', 
+      headerName: 'Marca', 
+      flex: 1, 
+      minWidth: 90,
+      renderCell: (params) => (
+        <Typography sx={{ color: '#cbd5e1', fontWeight: 500 }}>
+          {params.value}
+        </Typography>
+      )
+    },
+    { 
+      field: 'ip', 
+      headerName: 'Dirección IP', 
+      flex: 1, 
+      minWidth: 140,
+      renderCell: (params) => (
+        <Typography sx={{ 
+          color: '#60a5fa', 
+          fontFamily: 'monospace', 
+          fontSize: '0.9rem',
+          fontWeight: 600
+        }}>
+          {params.value}
+        </Typography>
+      )
+    },
+    { 
+      field: 'planta', 
+      headerName: 'Planta', 
+      flex: 1, 
+      minWidth: 90,
+      renderCell: (params) => (
+        <Typography sx={{ color: '#e2e8f0', fontWeight: 500 }}>
+          {params.value}
+        </Typography>
+      )
+    },
+    { 
+      field: 'lugar', 
+      headerName: 'Ubicación', 
+      flex: 1, 
+      minWidth: 110,
+      renderCell: (params) => (
+        <Typography sx={{ color: '#e2e8f0', fontWeight: 500 }}>
+          {params.value}
+        </Typography>
+      )
+    },
+    { 
+      field: 'mac', 
+      headerName: 'Dirección MAC', 
+      flex: 1, 
+      minWidth: 160,
+      renderCell: (params) => (
+        <Typography sx={{ 
+          color: '#94a3b8', 
+          fontFamily: 'monospace', 
+          fontSize: '0.85rem',
+          textTransform: 'uppercase'
+        }}>
+          {params.value}
+        </Typography>
+      )
+    },
     {
       field: 'status',
       headerName: 'Estado',
       flex: 1,
-      minWidth: 110,
+      minWidth: 120,
       renderCell: (params) => {
         const status = getSwitchStatus(params.row);
-        let icon, color, label;
+        let icon, color, label, bgColor;
         if (status === 'online') {
-          icon = <CheckIcon sx={{ color: theme.palette.success.main }} />;
+          icon = <CheckIcon sx={{ fontSize: '1.1rem' }} />;
+          color = '#22c55e';
+          bgColor = 'rgba(34, 197, 94, 0.1)';
           label = "Online";
         } else if (status === 'warning') {
-          icon = <WarningIcon sx={{ color: theme.palette.warning.main }} />;
+          icon = <WarningIcon sx={{ fontSize: '1.1rem' }} />;
+          color = '#f59e0b';
+          bgColor = 'rgba(245, 158, 11, 0.1)';
           label = "Warning";
         } else {
-          icon = <ErrorIcon sx={{ color: theme.palette.error.main }} />;
+          icon = <ErrorIcon sx={{ fontSize: '1.1rem' }} />;
+          color = '#ef4444';
+          bgColor = 'rgba(239, 68, 68, 0.1)';
           label = "Offline";
         }
         return (
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+          <Box sx={{ 
+            display: 'flex', 
+            alignItems: 'center', 
+            gap: 1,
+            backgroundColor: bgColor,
+            color: color,
+            padding: '4px 8px',
+            borderRadius: '8px',
+            border: `1px solid ${color}30`,
+            fontWeight: 600,
+            fontSize: '0.85rem'
+          }}>
             {icon}
             <span>{label}</span>
           </Box>
@@ -168,176 +352,344 @@ const Redes = () => {
       headerName: 'Acciones',
       minWidth: 150,
       sortable: false,
+      align: 'center',
+      headerAlign: 'center',
       renderCell: (params) => (
-        <Button
-          variant="contained"
-          size="small"
-          color="primary"
-          disabled={restarting[params.row.id]}
-          onClick={() => handleReiniciar(params.row.id)}
-          sx={{ fontWeight: 600 }}
-        >
-          {restarting[params.row.id] ? <CircularProgress size={16} /> : "Reiniciar"}
-        </Button>
+        <Box sx={{ display: 'flex', justifyContent: 'center', width: '100%' }}>
+          <Button
+            variant="contained"
+            size="small"
+            disabled={restarting[params.row.id]}
+            onClick={() => handleReiniciar(params.row.id)}
+            startIcon={restarting[params.row.id] ? null : <RestartIcon />}
+            sx={{ 
+              fontWeight: 600,
+              borderRadius: '12px',
+              textTransform: 'none',
+              minWidth: '120px',
+              height: '36px',
+              background: restarting[params.row.id] 
+                ? 'linear-gradient(135deg, rgba(148, 163, 184, 0.2), rgba(100, 116, 139, 0.2))'
+                : 'linear-gradient(135deg, #dc2626, #b91c1c)',
+              boxShadow: restarting[params.row.id] 
+                ? 'none'
+                : '0 4px 14px rgba(220, 38, 38, 0.3)',
+              border: restarting[params.row.id] 
+                ? '1px solid rgba(148, 163, 184, 0.3)'
+                : 'none',
+              color: restarting[params.row.id] ? '#64748b' : '#ffffff',
+              transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+              position: 'relative',
+              overflow: 'hidden',
+              '&:hover:not(:disabled)': {
+                background: 'linear-gradient(135deg, #b91c1c, #991b1b)',
+                transform: 'translateY(-2px)',
+                boxShadow: '0 8px 20px rgba(220, 38, 38, 0.4)'
+              },
+              '&:active:not(:disabled)': {
+                transform: 'translateY(0px)',
+                transition: 'transform 0.1s ease'
+              },
+              '&:disabled': {
+                cursor: 'not-allowed'
+              },
+              '&::before': {
+                content: '""',
+                position: 'absolute',
+                top: 0,
+                left: '-100%',
+                width: '100%',
+                height: '100%',
+                background: 'linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent)',
+                transition: 'left 0.5s ease',
+              },
+              '&:hover:not(:disabled)::before': {
+                left: '100%'
+              }
+            }}
+          >
+            {restarting[params.row.id] ? (
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                <CircularProgress 
+                  size={16} 
+                  sx={{ 
+                    color: '#64748b',
+                    '& .MuiCircularProgress-circle': {
+                      strokeLinecap: 'round'
+                    }
+                  }} 
+                />
+                <span>Reiniciando...</span>
+              </Box>
+            ) : (
+              "Reiniciar"
+            )}
+          </Button>
+        </Box>
       ),
     },
   ];
 
   return (
-    <Container maxWidth="xl" sx={{ mt: 4, mb: 4 }}>
-      {/* Header */}
-      <Paper elevation={0} sx={{
-        background: `linear-gradient(135deg, 
-          ${theme.palette.primary.main}15 0%, 
-          ${theme.palette.secondary.main}15 100%)`,
-        borderRadius: 4, p: 4, mb: 4, position: 'relative', overflow: 'hidden'
-      }}>
-        <Box sx={{ position: 'relative', zIndex: 1 }}>
-          <Box sx={{
-            display: 'flex', flexDirection: { xs: 'column', sm: 'row' },
-            justifyContent: 'space-between', alignItems: { xs: 'flex-start', sm: 'center' }, gap: 3
-          }}>
-            <Box>
-              <Typography variant="h3" component="h1" sx={{
-                fontWeight: 800, display: 'flex', alignItems: 'center', gap: 2, mb: 1,
-                background: `linear-gradient(45deg, 
-                  ${theme.palette.primary.main}, 
-                  ${theme.palette.secondary.main})`,
-                backgroundClip: 'text',
-                WebkitBackgroundClip: 'text',
-                WebkitTextFillColor: 'transparent'
+    <Box sx={{ p: { xs: 2, sm: 3 }, minHeight: '100vh' }}>
+      {/* Header mejorado */}
+      <Box sx={{ mb: 4 }}>
+        <Box sx={{
+          display: 'flex', 
+          flexDirection: { xs: 'column', sm: 'row' },
+          justifyContent: 'space-between', 
+          alignItems: { xs: 'flex-start', sm: 'center' }, 
+          gap: 3,
+          mb: 3
+        }}>
+          <Box>
+            <Typography 
+              variant="h3" 
+              sx={{ 
+                color: '#ffffff',
+                fontWeight: 600,
+                fontSize: { xs: '1.875rem', sm: '2.25rem', md: '2.5rem' },
+                mb: 1,
+                letterSpacing: '-0.025em',
+                display: 'flex',
+                alignItems: 'center',
+                gap: 2
+              }}
+            >
+              <Box sx={{
+                width: 48,
+                height: 48,
+                borderRadius: '12px',
+                background: 'linear-gradient(135deg, #3b82f6, #1d4ed8)',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                boxShadow: '0 8px 20px rgba(59, 130, 246, 0.3)'
               }}>
-                <Box sx={{
-                  p: 1.5, borderRadius: 2,
-                  background: `linear-gradient(45deg, 
-                    ${theme.palette.primary.main}20, 
-                    ${theme.palette.secondary.main}20)`,
-                  display: 'flex', alignItems: 'center'
-                }}>
-                  <SwitchIcon fontSize="large" />
-                </Box>
-                Centro de Control de Red
-              </Typography>
-              <Typography variant="h6" sx={{
-                color: 'text.secondary', fontWeight: 400, ml: 1
-              }}>
-                Monitoreo en tiempo real y gestión avanzada de infraestructura
-              </Typography>
-            </Box>
+                <SwitchIcon sx={{ color: '#ffffff', fontSize: '1.5rem' }} />
+              </Box>
+              Gestión de Red
+            </Typography>
+            <Typography 
+              variant="body1" 
+              sx={{ 
+                color: '#cbd5e1',
+                fontSize: '1rem',
+                fontWeight: 400,
+                mb: 3
+              }}
+            >
+              Monitoreo y control de switches de red en tiempo real
+            </Typography>
+            
+            {/* Decorative line */}
             <Box sx={{
-              display: 'flex', gap: 2, width: { xs: '100%', sm: 'auto' },
-              flexDirection: { xs: 'column', sm: 'row' }
-            }}>
-              <Button
-                variant="outlined"
-                size="large"
-                startIcon={refreshing ? <CircularProgress size={20} /> : <RefreshIcon />}
-                onClick={handleRefresh}
-                disabled={loading || refreshing}
-                sx={{
-                  borderWidth: 2,
-                  fontWeight: 600,
-                  '&:hover': {
-                    borderWidth: 2,
-                    transform: 'translateY(-2px)'
-                  }
-                }}
-              >
-                {refreshing ? 'Actualizando...' : 'Actualizar'}
-              </Button>
-              <Button
-                variant="contained"
-                size="large"
-                color="error"
-                startIcon={<PowerIcon />}
-                onClick={handleReiniciarTodos}
-                disabled={loading || switches.length === 0}
-                sx={{
-                  fontWeight: 600,
-                  boxShadow: `0 4px 12px ${theme.palette.error.main}40`,
-                  '&:hover': {
-                    transform: 'translateY(-2px)',
-                    boxShadow: `0 6px 20px ${theme.palette.error.main}60`
-                  }
-                }}
-              >
-                Reiniciar Todos
-              </Button>
-            </Box>
+              width: '80px',
+              height: '2px',
+              background: 'linear-gradient(90deg, rgba(59, 130, 246, 0.8), transparent)',
+              borderRadius: '1px',
+              opacity: 0.7
+            }} />
+          </Box>
+          
+          <Box sx={{
+            display: 'flex', 
+            gap: 2, 
+            width: { xs: '100%', sm: 'auto' },
+            flexDirection: { xs: 'column', sm: 'row' }
+          }}>
+            {/* Botón Actualizar mejorado */}
+            <Button
+              variant="outlined"
+              size="large"
+              startIcon={refreshing ? <CircularProgress size={20} sx={{ color: '#60a5fa' }} /> : <RefreshIcon />}
+              onClick={handleRefresh}
+              disabled={loading || refreshing}
+              sx={{
+                minWidth: '140px',
+                height: '48px',
+                borderColor: 'transparent',
+                color: '#60a5fa',
+                fontWeight: 600,
+                borderRadius: '14px',
+                textTransform: 'none',
+                background: 'linear-gradient(135deg, rgba(30, 41, 59, 0.8), rgba(51, 65, 85, 0.6))',
+                backdropFilter: 'blur(20px)',
+                border: '1px solid rgba(96, 165, 250, 0.3)',
+                position: 'relative',
+                overflow: 'hidden',
+                transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+                '&:hover:not(:disabled)': {
+                  borderColor: 'rgba(96, 165, 250, 0.6)',
+                  background: 'linear-gradient(135deg, rgba(96, 165, 250, 0.15), rgba(30, 41, 59, 0.9))',
+                  transform: 'translateY(-2px)',
+                  boxShadow: '0 8px 25px rgba(96, 165, 250, 0.2)',
+                  color: '#93c5fd'
+                },
+                '&:active:not(:disabled)': {
+                  transform: 'translateY(0px)',
+                  transition: 'transform 0.1s ease'
+                },
+                '&:disabled': {
+                  opacity: 0.6,
+                  cursor: 'not-allowed'
+                },
+                '&::before': {
+                  content: '""',
+                  position: 'absolute',
+                  top: 0,
+                  left: '-100%',
+                  width: '100%',
+                  height: '100%',
+                  background: 'linear-gradient(90deg, transparent, rgba(96, 165, 250, 0.1), transparent)',
+                  transition: 'left 0.6s ease',
+                },
+                '&:hover:not(:disabled)::before': {
+                  left: '100%'
+                }
+              }}
+            >
+              {refreshing ? 'Actualizando...' : 'Actualizar'}
+            </Button>
+
+            {/* Botón Reiniciar Todos mejorado */}
+            <Button
+              variant="contained"
+              size="large"
+              startIcon={<PowerIcon />}
+              onClick={handleReiniciarTodos}
+              disabled={loading || switches.length === 0}
+              sx={{
+                minWidth: '160px',
+                height: '48px',
+                fontWeight: 600,
+                borderRadius: '14px',
+                textTransform: 'none',
+                background: 'linear-gradient(135deg, #dc2626, #b91c1c)',
+                boxShadow: '0 8px 25px rgba(220, 38, 38, 0.3)',
+                border: 'none',
+                position: 'relative',
+                overflow: 'hidden',
+                transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+                '&:hover:not(:disabled)': {
+                  background: 'linear-gradient(135deg, #b91c1c, #991b1b)',
+                  transform: 'translateY(-2px)',
+                  boxShadow: '0 12px 35px rgba(220, 38, 38, 0.4)'
+                },
+                '&:active:not(:disabled)': {
+                  transform: 'translateY(0px)',
+                  transition: 'transform 0.1s ease'
+                },
+                '&:disabled': {
+                  background: 'linear-gradient(135deg, rgba(148, 163, 184, 0.3), rgba(100, 116, 139, 0.3))',
+                  color: '#64748b',
+                  cursor: 'not-allowed'
+                },
+                '&::before': {
+                  content: '""',
+                  position: 'absolute',
+                  top: 0,
+                  left: '-100%',
+                  width: '100%',
+                  height: '100%',
+                  background: 'linear-gradient(90deg, transparent, rgba(255,255,255,0.15), transparent)',
+                  transition: 'left 0.6s ease',
+                },
+                '&:hover:not(:disabled)::before': {
+                  left: '100%'
+                }
+              }}
+            >
+              Reiniciar Todos
+            </Button>
           </Box>
         </Box>
-      </Paper>
+      </Box>
 
-      {/* Estadísticas */}
+      {/* Estadísticas mejoradas */}
       {!loading && switches.length > 0 && (
         <Fade in timeout={800}>
-          <Box sx={{ display: 'flex', gap: 2, mb: 4, flexWrap: 'wrap' }}>
+          <Box sx={{ 
+            display: 'grid',
+            gridTemplateColumns: {
+              xs: '1fr',
+              sm: 'repeat(2, 1fr)',
+              lg: 'repeat(4, 1fr)'
+            },
+            gap: { xs: 2, sm: 3 },
+            mb: 4
+          }}>
             <StatCard
-              title="Total"
+              title="Total Switches"
               value={totalSwitches}
               icon={<SwitchIcon />}
-              color={theme.palette.primary.main}
-              subtitle="Switches registrados"
+              color="#3b82f6"
+              subtitle="Dispositivos registrados"
             />
             <StatCard
               title="Online"
               value={onlineSwitches}
               icon={<CheckIcon />}
-              color={theme.palette.success.main}
+              color="#22c55e"
               subtitle="Funcionando correctamente"
             />
             <StatCard
               title="Advertencias"
               value={warningSwitches}
               icon={<WarningIcon />}
-              color={theme.palette.warning.main}
+              color="#f59e0b"
               subtitle="Requieren atención"
             />
             <StatCard
-              title="Offline"
+              title="Desconectados"
               value={offlineSwitches}
               icon={<ErrorIcon />}
-              color={theme.palette.error.main}
+              color="#ef4444"
               subtitle="Sin conexión"
             />
           </Box>
         </Fade>
       )}
 
-      {/* Barra de progreso para loading/refreshing */}
+      {/* Barra de progreso */}
       {(loading || refreshing) && (
         <Box sx={{ mb: 3 }}>
           <LinearProgress
             sx={{
               height: 6,
               borderRadius: 3,
+              backgroundColor: 'rgba(71, 85, 105, 0.3)',
               '& .MuiLinearProgress-bar': {
                 borderRadius: 3,
-                background: `linear-gradient(90deg, 
-                  ${theme.palette.primary.main}, 
-                  ${theme.palette.secondary.main})`
+                background: 'linear-gradient(90deg, #3b82f6, #1d4ed8)'
               }
             }}
           />
         </Box>
       )}
 
-      {/* DataGrid */}
+      {/* DataGrid mejorado */}
       {!loading && switches.length === 0 ? (
         <Fade in timeout={600}>
-          <Alert
-            severity="info"
-            sx={{
-              mt: 2,
-              borderRadius: 3,
-              '& .MuiAlert-message': { fontSize: '1.1rem' }
-            }}
-          >
-            No hay switches registrados en el sistema.
-          </Alert>
+          <Paper sx={{
+            p: 4,
+            background: 'rgba(30, 41, 59, 0.4)',
+            border: '1px solid rgba(71, 85, 105, 0.3)',
+            borderRadius: '16px',
+            backdropFilter: 'blur(20px)',
+            textAlign: 'center'
+          }}>
+            <SwitchIcon sx={{ fontSize: '4rem', color: '#64748b', mb: 2 }} />
+            <Typography variant="h6" sx={{ color: '#f1f5f9', mb: 1, fontWeight: 600 }}>
+              No hay switches registrados
+            </Typography>
+            <Typography variant="body2" sx={{ color: '#94a3b8' }}>
+              No se encontraron dispositivos de red en el sistema.
+            </Typography>
+          </Paper>
         </Fade>
       ) : (
-        <Box sx={{ height: 650, width: '100%', mt: 4 }}>
+        <Box sx={{ height: 650, width: '100%' }}>
           <DataGrid
             rows={switches}
             columns={columns}
@@ -347,54 +699,85 @@ const Redes = () => {
             loading={loading}
             checkboxSelection={false}
             disableSelectionOnClick
+            disableRowSelectionOnClick
             sx={{
-              background: theme.palette.background.paper,
-              borderRadius: 3,
-              boxShadow: 2,
-              fontSize: '1.05rem',
-              color: theme.palette.text.primary,
-              borderColor: theme.palette.divider,
+              background: 'rgba(30, 41, 59, 0.4)',
+              border: '1px solid rgba(71, 85, 105, 0.3)',
+              borderRadius: '16px',
+              backdropFilter: 'blur(20px)',
+              fontSize: '0.95rem',
+              color: '#f1f5f9',
               '& .MuiDataGrid-cell': {
-                color: theme.palette.text.primary,
-                borderColor: theme.palette.divider,
+                color: '#f1f5f9',
+                borderColor: 'rgba(71, 85, 105, 0.2)',
+                padding: '12px',
+                '&:focus': {
+                  outline: 'none',
+                },
+                '&:focus-within': {
+                  outline: 'none',
+                }
               },
               '& .MuiDataGrid-columnHeaders': {
-                backgroundColor: theme.palette.mode === 'dark' 
-                  ? theme.palette.grey[800] 
-                  : theme.palette.grey[100],
-                color: theme.palette.text.primary,
+                backgroundColor: 'rgba(15, 23, 42, 0.6)',
+                color: '#f1f5f9',
                 fontWeight: 700,
-                borderColor: theme.palette.divider,
-                letterSpacing: '0.03em',
-                fontSize: '1.09rem',
+                borderColor: 'rgba(71, 85, 105, 0.3)',
+                letterSpacing: '0.025em',
+                fontSize: '0.9rem',
+                borderRadius: '16px 16px 0 0'
               },
               '& .MuiDataGrid-columnHeader': {
                 backgroundColor: 'inherit',
                 color: 'inherit',
-              },
-              '& .MuiDataGrid-columnHeader .MuiDataGrid-iconButtonContainer': {
-                '& .MuiIconButton-root': {
-                  color: theme.palette.text.primary,
+                '&:focus': {
+                  outline: 'none',
                 },
+                '&:focus-within': {
+                  outline: 'none',
+                }
               },
               '& .MuiDataGrid-columnSeparator': {
-                color: theme.palette.divider,
+                color: 'rgba(71, 85, 105, 0.3)',
               },
               '& .MuiDataGrid-footerContainer': {
-                background: `${theme.palette.background.default}CC`,
-                color: theme.palette.text.primary,
+                background: 'rgba(15, 23, 42, 0.6)',
+                color: '#f1f5f9',
+                borderColor: 'rgba(71, 85, 105, 0.3)',
+                borderRadius: '0 0 16px 16px'
               },
-              '& .MuiDataGrid-row:hover': {
-                background: `${theme.palette.primary.main}22`,
+              '& .MuiDataGrid-row': {
+                borderColor: 'rgba(71, 85, 105, 0.2)',
+                cursor: 'default',
+                '&:hover': {
+                  background: 'rgba(59, 130, 246, 0.06)',
+                },
+                '&.Mui-selected': {
+                  background: 'transparent',
+                  '&:hover': {
+                    background: 'rgba(59, 130, 246, 0.06)',
+                  }
+                },
+                '&:focus': {
+                  outline: 'none',
+                },
+                '&:focus-within': {
+                  outline: 'none',
+                }
               },
-              '& .MuiButton-root': {
-                color: theme.palette.primary.contrastText,
-              },
+              '& .MuiDataGrid-cell--textLeft': {
+                '&:focus': {
+                  outline: 'none',
+                },
+                '&:focus-within': {
+                  outline: 'none',
+                }
+              }
             }}
           />
         </Box>
       )}
-    </Container>
+    </Box>
   );
 };
 
