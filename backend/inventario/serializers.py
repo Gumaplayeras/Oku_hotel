@@ -1,5 +1,6 @@
 from rest_framework import serializers
-from .models import Departamento, Estado, Ubicacion, Empleado, EquipoGeneral, PDA, SIM, OraclePOS, Incidencia, Movimiento, Switch
+from django.contrib.auth.models import User
+from .models import Departamento, Estado, Ubicacion, Empleado, EquipoGeneral, PDA, SIM, OraclePOS, Incidencia, Movimiento, Switch, Delegacion
 
 class DepartamentoSerializer(serializers.ModelSerializer):
     class Meta:
@@ -17,9 +18,22 @@ class UbicacionSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 class EmpleadoSerializer(serializers.ModelSerializer):
+    departamento_nombre = serializers.CharField(source="departamento.nombre", read_only=True)
+    delegacion_nombre = serializers.CharField(source="delegacion.nombre", read_only=True)
+
     class Meta:
         model = Empleado
-        fields = '__all__'
+        fields = [
+            "id",
+            "nombre",
+            "email",
+            "departamento",
+            "departamento_nombre",
+            "delegacion",
+            "delegacion_nombre",
+            "rol",
+            "tipo_rol",
+        ]
 
 class EquipoGeneralSerializer(serializers.ModelSerializer):
     empleado = EmpleadoSerializer(read_only=True)
@@ -69,3 +83,20 @@ class SwitchSerializer(serializers.ModelSerializer):
     class Meta:
         model = Switch
         fields = '__all__'
+
+
+class UserWithEmpleadoSerializer(serializers.ModelSerializer):
+    empleado = EmpleadoSerializer(read_only=True)
+
+    class Meta:
+        model = User
+        fields = [
+            "id",
+            "username",
+            "first_name",
+            "last_name",
+            "email",
+            "is_active",
+            "is_staff",
+            "empleado",
+        ]

@@ -46,7 +46,7 @@ const Empleados = () => {
                   <TableCell>{empleado.id}</TableCell>
                   <TableCell>{empleado.nombre}</TableCell>
                   <TableCell>{empleado.email}</TableCell>
-                  <TableCell>{empleado.departamento}</TableCell>
+                  <TableCell>{empleado.departamento_nombre}</TableCell>
                 </TableRow>
               ))}
             </TableBody>

@@ -1,22 +1,45 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { logout } from '../../api/auth';
-import { 
-  AppBar, Toolbar, Typography, Button, Box, Badge, 
-  IconButton, Menu, MenuItem, Avatar, Chip
+import {
+  AppBar, Toolbar, Typography, Button, Box, Badge,
+  IconButton, Menu, MenuItem, Avatar, Chip, Drawer, Divider
 } from '@mui/material';
-import { 
+import {
   Notifications as NotificationsIcon,
-  AccountCircle as AccountCircleIcon,
   Hotel as HotelIcon,
-  LocationOn as LocationIcon
+  LocationOn as LocationIcon,
+  Close as CloseIcon
 } from '@mui/icons-material';
+import { getMyProfile } from '../../api/user';
+import Profile from '../../pages/Profile';
 
 export default function Header() {
   const navigate = useNavigate();
   const location = useLocation();
   const [anchorEl, setAnchorEl] = useState(null);
+  const [user, setUser] = useState(null);
+  const [openProfile, setOpenProfile] = useState(false);
   const open = Boolean(anchorEl);
+
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      try {
+        const me = await getMyProfile();
+        if (!cancelled) setUser(me);
+      } catch (e) {
+        // Redirige a login si no estamos autenticados
+        if (e?.response?.status === 401) {
+          try { await logout(); } catch {}
+          if (!cancelled) navigate('/login');
+        } else {
+          console.error('Error cargando usuario', e);
+        }
+      }
+    })();
+    return () => { cancelled = true; };
+  }, [navigate]);
 
   const handleMenu = (event) => setAnchorEl(event.currentTarget);
   const handleClose = () => setAnchorEl(null);
@@ -24,91 +47,39 @@ export default function Header() {
   const handleLogout = async () => {
     try {
       await logout();
+      handleClose();
       navigate('/login');
     } catch (error) {
       console.error('Error al cerrar sesión:', error);
     }
   };
 
+  const displayName = user
+    ? ((user.first_name || user.last_name)
+        ? `${user.first_name || ''} ${user.last_name || ''}`.trim()
+        : (user.username || ''))
+    : '';
+
+  const avatarInitials = user
+    ? ((user.first_name && user.last_name)
+        ? `${user.first_name[0]}${user.last_name[0]}`.toUpperCase()
+        : (user.username ? user.username.slice(0, 2).toUpperCase() : 'IT'))
+    : 'IT';
+
   const navItems = [
     { text: 'Dashboard', path: '/dashboard' },
     { text: 'Equipos', path: '/equipos' },
-    { text: 'SIMs', path: '/sims' },
     { text: 'Empleados', path: '/empleados' },
-    { text: 'Incidencias', path: '/incidencias' },
     { text: 'Redes', path: '/redes' },
+    { text: 'SIMS', path: '/sims' },
+    { text: 'Incidencias', path: '/incidencias' },
   ];
 
-  // Opción 1: Logo con icono y subtítulo elegante
-  const LogoOption1 = () => (
-    <Box 
-      sx={{ 
-        display: 'flex', 
-        alignItems: 'center',
-        cursor: 'pointer',
-        transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-        padding: '8px 12px',
-        borderRadius: '12px',
-        position: 'relative',
-        '&:hover': {
-          background: 'rgba(255, 255, 255, 0.05)',
-          transform: 'translateY(-1px)',
-        }
-      }}
-      onClick={() => navigate('/dashboard')}
-    >
-      <Box sx={{
-        width: 40,
-        height: 40,
-        borderRadius: '10px',
-        background: 'linear-gradient(135deg, #d4a574, #c9975b)',
+  // Logo elegante con badge de ubicación
+  const Logo = () => (
+    <Box
+      sx={{
         display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        mr: 2,
-        boxShadow: '0 4px 12px rgba(212, 165, 116, 0.3)',
-        border: '1px solid rgba(212, 165, 116, 0.3)'
-      }}>
-        <HotelIcon sx={{ color: '#ffffff', fontSize: '1.3rem' }} />
-      </Box>
-      <Box>
-        <Typography 
-          variant="h5" 
-          sx={{ 
-            fontWeight: 700,
-            color: '#ffffff',
-            letterSpacing: '2px',
-            fontSize: '1.4rem',
-            lineHeight: 1,
-            fontFamily: '"Playfair Display", serif',
-          }}
-        >
-          OKU
-        </Typography>
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-          <LocationIcon sx={{ fontSize: '0.75rem', color: '#d4a574', opacity: 0.8 }} />
-          <Typography 
-            variant="caption"
-            sx={{ 
-              color: '#94a3b8',
-              fontSize: '0.7rem',
-              fontWeight: 500,
-              letterSpacing: '1px',
-              textTransform: 'uppercase'
-            }}
-          >
-            Ibiza
-          </Typography>
-        </Box>
-      </Box>
-    </Box>
-  );
-
-  // Opción 2: Estilo moderno con badge
-  const LogoOption2 = () => (
-    <Box 
-      sx={{ 
-        display: 'flex', 
         alignItems: 'center',
         cursor: 'pointer',
         transition: 'all 0.3s ease',
@@ -118,9 +89,9 @@ export default function Header() {
       onClick={() => navigate('/dashboard')}
     >
       <Box sx={{ position: 'relative' }}>
-        <Typography 
-          variant="h4" 
-          sx={{ 
+        <Typography
+          variant="h4"
+          sx={{
             fontWeight: 800,
             color: '#ffffff',
             letterSpacing: '3px',
@@ -148,6 +119,7 @@ export default function Header() {
       <Chip
         label="IBIZA"
         size="small"
+        icon={<LocationIcon sx={{ fontSize: '1rem !important' }} />}
         sx={{
           background: 'linear-gradient(135deg, #d4a574, #c9975b)',
           color: '#ffffff',
@@ -157,76 +129,17 @@ export default function Header() {
           height: '24px',
           borderRadius: '12px',
           boxShadow: '0 2px 8px rgba(212, 165, 116, 0.3)',
-          '& .MuiChip-label': {
-            padding: '0 8px'
-          }
+          '& .MuiChip-label': { padding: '0 6px 0 0' }
         }}
       />
     </Box>
   );
 
-  // Opción 3: Estilo premium con separador
-  const LogoOption3 = () => (
-    <Box 
-      sx={{ 
-        display: 'flex', 
-        alignItems: 'center',
-        cursor: 'pointer',
-        transition: 'all 0.3s ease',
-        position: 'relative',
-        padding: '6px 0'
-      }}
-      onClick={() => navigate('/dashboard')}
-    >
-      <Box>
-        <Typography 
-          variant="h4" 
-          sx={{ 
-            fontWeight: 300,
-            color: '#ffffff',
-            letterSpacing: '4px',
-            fontSize: '1.8rem',
-            fontFamily: '"Montserrat", sans-serif',
-            lineHeight: 1,
-            mb: 0.5
-          }}
-        >
-          OKU
-        </Typography>
-        <Box sx={{ 
-          display: 'flex', 
-          alignItems: 'center', 
-          gap: 1,
-          opacity: 0.8 
-        }}>
-          <Box sx={{
-            width: '20px',
-            height: '1px',
-            background: 'linear-gradient(90deg, #d4a574, transparent)'
-          }} />
-          <Typography 
-            variant="caption"
-            sx={{ 
-              color: '#cbd5e1',
-              fontSize: '0.75rem',
-              fontWeight: 400,
-              letterSpacing: '2px',
-              textTransform: 'uppercase',
-              fontFamily: '"Inter", sans-serif'
-            }}
-          >
-            Hotels · Ibiza
-          </Typography>
-        </Box>
-      </Box>
-    </Box>
-  );
-
   return (
-    <AppBar 
-      position="static" 
+    <AppBar
+      position="static"
       elevation={0}
-      sx={{ 
+      sx={{
         background: 'rgba(15, 18, 23, 0.95)',
         backdropFilter: 'blur(20px)',
         borderBottom: '1px solid rgba(255, 255, 255, 0.08)',
@@ -242,18 +155,17 @@ export default function Header() {
         }
       }}
     >
-      <Toolbar sx={{ 
+      <Toolbar sx={{
         justifyContent: 'space-between',
         position: 'relative',
         zIndex: 1,
         py: 1
       }}>
-        
-        {/* Cambia entre LogoOption1, LogoOption2, o LogoOption3 */}
-        <LogoOption2 />
 
-        <Box sx={{ 
-          display: { xs: 'none', sm: 'flex' }, 
+        <Logo />
+
+        <Box sx={{
+          display: { xs: 'none', sm: 'flex' },
           gap: 1,
           background: 'rgba(255, 255, 255, 0.03)',
           borderRadius: '12px',
@@ -273,15 +185,15 @@ export default function Header() {
                 fontSize: '0.9rem',
                 minWidth: 'auto',
                 transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
-                background: location.pathname === item.path 
-                  ? 'linear-gradient(135deg, rgba(212, 165, 116, 0.15), rgba(201, 151, 91, 0.15))' 
+                background: location.pathname === item.path
+                  ? 'linear-gradient(135deg, rgba(212, 165, 116, 0.15), rgba(201, 151, 91, 0.15))'
                   : 'transparent',
-                border: location.pathname === item.path 
-                  ? '1px solid rgba(212, 165, 116, 0.3)' 
+                border: location.pathname === item.path
+                  ? '1px solid rgba(212, 165, 116, 0.3)'
                   : '1px solid transparent',
                 '&:hover': {
                   color: '#ffffff',
-                  background: location.pathname === item.path 
+                  background: location.pathname === item.path
                     ? 'linear-gradient(135deg, rgba(212, 165, 116, 0.2), rgba(201, 151, 91, 0.2))'
                     : 'rgba(255, 255, 255, 0.05)',
                   border: '1px solid rgba(255, 255, 255, 0.1)'
@@ -293,16 +205,16 @@ export default function Header() {
           ))}
         </Box>
 
-        <Box sx={{ 
-          display: 'flex', 
-          alignItems: 'center', 
+        <Box sx={{
+          display: 'flex',
+          alignItems: 'center',
           gap: 2,
           background: 'rgba(255, 255, 255, 0.03)',
           borderRadius: '12px',
           padding: '8px',
           border: '1px solid rgba(255, 255, 255, 0.08)'
         }}>
-          <IconButton 
+          <IconButton
             color="inherit"
             sx={{
               color: '#94a3b8',
@@ -313,8 +225,8 @@ export default function Header() {
               }
             }}
           >
-            <Badge 
-              badgeContent={4} 
+            <Badge
+              badgeContent={4}
               sx={{
                 '& .MuiBadge-badge': {
                   background: 'linear-gradient(135deg, #d4a574, #c9975b)',
@@ -329,29 +241,56 @@ export default function Header() {
             </Badge>
           </IconButton>
 
-          <IconButton
-            color="inherit"
-            onClick={handleMenu}
-            sx={{
-              color: '#94a3b8',
-              transition: 'all 0.2s ease',
-              '&:hover': {
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+            {displayName && (
+              <Box sx={{ display: { xs: 'none', md: 'flex' }, flexDirection: 'column', mr: 0.5 }}>
+                <Typography variant="body2" sx={{ color: '#e2e8f0', fontWeight: 600, lineHeight: 1 }}>
+                  {displayName}
+                </Typography>
+                {user?.email && (
+                  <Typography variant="caption" sx={{ color: '#94a3b8', lineHeight: 1 }}>
+                    {user.email}
+                  </Typography>
+                )}
+              </Box>
+            )}
+            {user?.rol && (
+              <Chip
+                label={user.rol}
+                size="small"
+                sx={{
+                  height: 24,
+                  background: 'rgba(212,165,116,0.15)',
+                  border: '1px solid rgba(212,165,116,0.35)',
+                  color: '#fff'
+                }}
+              />
+            )}
+            <IconButton
+              color="inherit"
+              onClick={handleMenu}
+              sx={{
+                color: '#94a3b8',
+                transition: 'all 0.2s ease',
+                '&:hover': {
+                  color: '#ffffff',
+                  background: 'rgba(255, 255, 255, 0.08)'
+                }
+              }}
+              aria-label="Menú de usuario"
+            >
+              <Avatar sx={{
+                background: 'linear-gradient(135deg, #d4a574, #c9975b)',
+                width: 36,
+                height: 36,
+                border: '1px solid rgba(212, 165, 116, 0.3)',
                 color: '#ffffff',
-                background: 'rgba(255, 255, 255, 0.08)'
-              }
-            }}
-          >
-            <Avatar sx={{ 
-              background: 'linear-gradient(135deg, #d4a574, #c9975b)',
-              width: 36,
-              height: 36,
-              border: '1px solid rgba(212, 165, 116, 0.3)',
-              color: '#ffffff',
-              fontWeight: 600
-            }}>
-              IT
-            </Avatar>
-          </IconButton>
+                fontWeight: 600
+              }}>
+                {avatarInitials}
+              </Avatar>
+            </IconButton>
+          </Box>
 
           <Menu
             anchorEl={anchorEl}
@@ -360,7 +299,7 @@ export default function Header() {
             PaperProps={{
               sx: {
                 mt: 1,
-                minWidth: 200,
+                minWidth: 220,
                 background: 'rgba(15, 18, 23, 0.95)',
                 backdropFilter: 'blur(20px)',
                 border: '1px solid rgba(255, 255, 255, 0.08)',
@@ -381,18 +320,45 @@ export default function Header() {
               }
             }}
           >
-            <MenuItem onClick={() => { navigate('/profile'); handleClose(); }}>
+            <MenuItem onClick={() => { setOpenProfile(true); handleClose(); }}>
               Mi Perfil
             </MenuItem>
-            <MenuItem onClick={() => { navigate('/admin/users'); handleClose(); }}>
+            <MenuItem onClick={() => { navigate('/users/manage'); handleClose(); }}>
               Gestión de Usuarios
             </MenuItem>
+            <Divider sx={{ my: 0.5, borderColor: 'rgba(255,255,255,0.08)' }} />
             <MenuItem onClick={handleLogout}>
               Cerrar Sesión
             </MenuItem>
           </Menu>
         </Box>
       </Toolbar>
+
+      {/* Drawer de Perfil (flotante, integrado en el dashboard) */}
+      <Drawer
+        anchor="right"
+        open={openProfile}
+        onClose={() => setOpenProfile(false)}
+        PaperProps={{
+          sx: {
+            width: { xs: '100%', sm: 440 },
+            background: 'rgba(15,18,23,0.97)',
+            color: '#fff',
+            borderLeft: '1px solid rgba(255,255,255,0.1)'
+          }
+        }}
+      >
+        <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', p: 2 }}>
+          <Typography variant="h6" sx={{ fontWeight: 700 }}>Mi Perfil</Typography>
+          <IconButton onClick={() => setOpenProfile(false)} sx={{ color: '#94a3b8' }} aria-label="Cerrar perfil">
+            <CloseIcon />
+          </IconButton>
+        </Box>
+        <Divider sx={{ borderColor: 'rgba(255,255,255,0.08)' }} />
+        <Box sx={{ p: 2 }}>
+          <Profile />
+        </Box>
+      </Drawer>
     </AppBar>
   );
 }

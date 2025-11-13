@@ -6,11 +6,12 @@ from .models import (
 from .serializers import (
     DepartamentoSerializer, EstadoSerializer, UbicacionSerializer, EmpleadoSerializer,
     EquipoGeneralSerializer, PDASerializer, SIMSerializer, OraclePOSSerializer,
-    IncidenciaSerializer, MovimientoSerializer, SwitchSerializer
+    IncidenciaSerializer, MovimientoSerializer, SwitchSerializer, UserWithEmpleadoSerializer
 )
+from django.contrib.auth.models import User
 from rest_framework.response import Response
-from rest_framework.permissions import IsAuthenticated
-from rest_framework.decorators import action
+from rest_framework.permissions import IsAuthenticated, IsAdminUser
+from rest_framework.decorators import action, api_view, permission_classes
 from .network import reiniciar_switch 
 
 class DepartamentoViewSet(viewsets.ModelViewSet):
@@ -82,3 +83,69 @@ class SwitchViewSet(viewsets.ModelViewSet):
                 return Response({"error": resultado["error"]}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
         except Exception as e:
             return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        
+
+class UserViewSet(viewsets.ModelViewSet):
+
+    queryset = User.objects.all().order_by("username")
+    serializer_class = UserWithEmpleadoSerializer
+    permission_classes = [IsAuthenticated, IsAdminUser]
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def current_user(request):
+    """
+    Versión simple: solo datos del usuario Django.
+    Útil para cosas rápidas (header, etc.).
+    """
+    user = request.user
+    return Response({
+        "id": user.id,
+        "username": user.username,
+        "first_name": user.first_name,
+        "last_name": user.last_name,
+        "email": user.email,
+    })
+
+
+# --- BEGIN me_profile endpoint ---
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def me_profile(request):
+    """
+    Devuelve datos del usuario autenticado (User) + perfil funcional (Empleado).
+    Ahora mismo se empareja por email.
+    """
+    u = request.user
+
+    emp = None
+    if u.email:
+        emp = (
+            Empleado.objects
+            .select_related('departamento', 'delegacion')
+            .filter(email__iexact=u.email)
+            .first()
+        )
+
+    data = {
+        "id": u.id,
+        "username": u.username,
+        "first_name": u.first_name,
+        "last_name": u.last_name,
+        "email": u.email,
+        "empleado": None,
+    }
+
+    if emp:
+        data["empleado"] = {
+            "id": emp.id,
+            "nombre": getattr(emp, "nombre", None),
+            "email": getattr(emp, "email", None),
+            "departamento": emp.departamento.nombre if getattr(emp, "departamento", None) else None,
+            "delegacion": emp.delegacion.nombre if getattr(emp, "delegacion", None) else None,
+            "rol": getattr(emp, "rol", None),
+            "tipo_rol": getattr(emp, "tipo_rol", None),
+        }
+
+    return Response(data, status=status.HTTP_200_OK)
+# --- END me_profile endpoint ---

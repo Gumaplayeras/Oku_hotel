@@ -74,7 +74,6 @@ const Sidebar = ({ isOpen }) => {
                     mb: 1,
                     py: 1.2,
                     borderRadius: 2,
-                    // CORRECCIÓN AQUÍ: Usamos theme.palette para alpha
                     backgroundColor: isActive
                       ? alpha(theme.palette.primary.main, 0.12) // Acceso directo al color del tema
                       : 'transparent',
