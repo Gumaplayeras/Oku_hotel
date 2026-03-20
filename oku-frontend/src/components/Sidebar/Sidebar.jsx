@@ -1,10 +1,9 @@
 import React from 'react';
-import { Drawer, List, ListItemButton, ListItemIcon, ListItemText, Toolbar, Box, Typography, alpha, useTheme } from '@mui/material'; // <-- Importa useTheme
+import { Drawer, List, ListItemButton, ListItemIcon, ListItemText, Toolbar, Box, Typography, alpha, useTheme } from '@mui/material';
 import DashboardIcon from '@mui/icons-material/Dashboard';
 import DevicesIcon from '@mui/icons-material/Devices';
-import SimCardIcon from '@mui/icons-material/SimCard';
 import PeopleIcon from '@mui/icons-material/People';
-import AssignmentIcon from '@mui/icons-material/Assignment';
+import DescriptionIcon from '@mui/icons-material/Description';
 import { NavLink } from 'react-router-dom';
 import LanIcon from '@mui/icons-material/Lan';
 
@@ -15,9 +14,8 @@ const Sidebar = ({ isOpen }) => {
   const menuItems = [
     { text: 'Dashboard', icon: <DashboardIcon />, path: '/dashboard' },
     { text: 'Equipos', icon: <DevicesIcon />, path: '/equipos' },
-    { text: 'SIMs', icon: <SimCardIcon />, path: '/sims' },
     { text: 'Empleados', icon: <PeopleIcon />, path: '/empleados' },
-    { text: 'Incidencias', icon: <AssignmentIcon />, path: '/incidencias' },
+    { text: 'Partes', icon: <DescriptionIcon />, path: '/partes' },
     { text: 'Redes', icon: <LanIcon />, path: '/redes' },
   ];
 

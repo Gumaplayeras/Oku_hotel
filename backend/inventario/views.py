@@ -1,12 +1,13 @@
 from rest_framework import viewsets, status
 from .models import (
     Departamento, Estado, Ubicacion, Empleado, EquipoGeneral,
-    PDA, SIM, OraclePOS, Incidencia, Movimiento, Switch
+    PDA, SIM, OraclePOS, Incidencia, Movimiento, Switch, Parte
 )
 from .serializers import (
     DepartamentoSerializer, EstadoSerializer, UbicacionSerializer, EmpleadoSerializer,
     EquipoGeneralSerializer, PDASerializer, SIMSerializer, OraclePOSSerializer,
-    IncidenciaSerializer, MovimientoSerializer, SwitchSerializer, UserWithEmpleadoSerializer
+    IncidenciaSerializer, MovimientoSerializer, SwitchSerializer, UserWithEmpleadoSerializer,
+    ParteSerializer
 )
 from django.contrib.auth.models import User
 from rest_framework.response import Response
@@ -52,6 +53,11 @@ class IncidenciaViewSet(viewsets.ModelViewSet):
     queryset = Incidencia.objects.all()
     serializer_class = IncidenciaSerializer
 
+class ParteViewSet(viewsets.ModelViewSet):
+    queryset = Parte.objects.select_related('equipo', 'asignado_a').all()
+    serializer_class = ParteSerializer
+    permission_classes = [IsAuthenticated]
+
 class MovimientoViewSet(viewsets.ModelViewSet):
     queryset = Movimiento.objects.all().order_by('-fecha')
     serializer_class = MovimientoSerializer
@@ -85,6 +91,38 @@ class SwitchViewSet(viewsets.ModelViewSet):
             return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
         
 
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def equipment_alerts(request):
+    """
+    Devuelve un resumen de alertas de equipos:
+    - Estados considerados problema: Warning, Offline
+    """
+    estados_problema = ['Warning', 'Offline']
+
+    equipos = (
+        EquipoGeneral.objects
+        .select_related('estado', 'ubicacion')
+        .filter(estado__nombre__in=estados_problema)
+    )
+
+    alerts = []
+    for e in equipos:
+        alerts.append({
+            "id_inventario": getattr(e, "id_inventario", None),
+            "nombre": getattr(e, "nombre", None),
+            "estado": e.estado.nombre if getattr(e, "estado", None) else None,
+            "plot": getattr(e, "plot", None),
+            "planta": getattr(e.ubicacion, "planta", None) if getattr(e, "ubicacion", None) else None,
+            "ubicacion": str(e.ubicacion) if getattr(e, "ubicacion", None) else None,
+        })
+
+    return Response({
+        "has_alerts": bool(alerts),
+        "total": len(alerts),
+        "alerts": alerts,
+    })
+
 class UserViewSet(viewsets.ModelViewSet):
 
     queryset = User.objects.all().order_by("username")
@@ -94,10 +132,6 @@ class UserViewSet(viewsets.ModelViewSet):
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 def current_user(request):
-    """
-    Versión simple: solo datos del usuario Django.
-    Útil para cosas rápidas (header, etc.).
-    """
     user = request.user
     return Response({
         "id": user.id,
@@ -112,10 +146,6 @@ def current_user(request):
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 def me_profile(request):
-    """
-    Devuelve datos del usuario autenticado (User) + perfil funcional (Empleado).
-    Ahora mismo se empareja por email.
-    """
     u = request.user
 
     emp = None

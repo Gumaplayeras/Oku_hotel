@@ -18,7 +18,7 @@ from django.contrib import admin
 from django.urls import path, include
 from rest_framework import routers
 from inventario import views
-from inventario.views import SwitchViewSet, current_user, me_profile
+from inventario.views import SwitchViewSet, current_user, me_profile, equipment_alerts, ParteViewSet
 from rest_framework_simplejwt.views import (
     TokenObtainPairView,
     TokenRefreshView,
@@ -35,6 +35,7 @@ router.register(r'pda', views.PDAViewSet)
 router.register(r'sims', views.SIMViewSet)
 router.register(r'oracle', views.OraclePOSViewSet)
 router.register(r'incidencias', views.IncidenciaViewSet)
+router.register(r'partes', ParteViewSet)
 router.register(r'movimientos', views.MovimientoViewSet)
 router.register(r'switches', views.SwitchViewSet)
 router.register(r'users', views.UserViewSet, basename='user')

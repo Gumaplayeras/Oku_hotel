@@ -1,0 +1,319 @@
+/* ============================================
+   ParteForm.css – OKU Ibiza IT · Screen + Print A4
+   ============================================ */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+/* ---- WRAPPER ---- */
+.pf-wrapper {
+  min-height: 100vh;
+  background: #0a0d12;
+  padding: 0 0 60px;
+  font-family: 'Inter', 'Helvetica Neue', Arial, sans-serif;
+}
+
+/* ---- TOP BAR ---- */
+.pf-topbar {
+  position: sticky; top: 0; z-index: 100;
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 12px 40px;
+  background: rgba(10,13,18,0.96);
+  backdrop-filter: blur(20px);
+  border-bottom: 1px solid rgba(212,165,116,0.15);
+}
+.pf-btn-back {
+  background: none; border: 1px solid rgba(255,255,255,0.15);
+  color: #94a3b8; padding: 7px 14px; border-radius: 8px;
+  cursor: pointer; font-size: 0.85rem; transition: all 0.2s;
+}
+.pf-btn-back:hover { color: #fff; border-color: rgba(255,255,255,0.35); }
+.pf-topbar-actions { display: flex; align-items: center; gap: 10px; }
+.pf-saved-badge {
+  color: #22c55e; font-size: 0.82rem; font-weight: 600;
+  padding: 5px 12px; background: rgba(34,197,94,0.1);
+  border-radius: 20px; border: 1px solid rgba(34,197,94,0.3);
+}
+.pf-saved-link { cursor: pointer; text-decoration: underline; opacity: 0.85; }
+.pf-saved-link:hover { opacity: 1; }
+.pf-btn {
+  padding: 8px 18px; border-radius: 9px; font-size: 0.85rem;
+  font-weight: 600; cursor: pointer; border: none; transition: all 0.2s;
+}
+.pf-btn-clear { background: rgba(255,255,255,0.05); color: #94a3b8; border: 1px solid rgba(255,255,255,0.1); }
+.pf-btn-clear:hover { background: rgba(255,255,255,0.1); color: #fff; }
+.pf-btn-save { background: rgba(212,165,116,0.12); color: #d4a574; border: 1px solid rgba(212,165,116,0.3); }
+.pf-btn-save:hover { background: rgba(212,165,116,0.22); }
+.pf-btn-save:disabled { opacity: 0.5; cursor: not-allowed; }
+.pf-btn-print { background: linear-gradient(135deg,#d4a574,#c9975b); color: #fff; box-shadow: 0 4px 14px rgba(212,165,116,0.3); }
+.pf-btn-print:hover { background: linear-gradient(135deg,#c9975b,#b8834a); transform: translateY(-1px); }
+
+/* ---- DOCUMENT ---- */
+.pf-doc {
+  max-width: 860px; margin: 28px auto 0;
+  background: #13171f;
+  border: 1px solid rgba(212,165,116,0.15);
+  border-radius: 18px; overflow: hidden;
+  box-shadow: 0 40px 80px rgba(0,0,0,0.5);
+}
+
+/* ---- HEADER ---- */
+.pf-header {
+  display: grid; grid-template-columns: 90px 1fr 170px;
+  align-items: center; gap: 20px; padding: 24px 36px 20px;
+  background: linear-gradient(135deg,#0f1318,#161b24);
+  border-bottom: 1px solid rgba(212,165,116,0.1);
+}
+.pf-logo-box {
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  width: 72px; height: 72px; border: 1.5px solid rgba(212,165,116,0.6);
+  border-radius: 12px; background: rgba(212,165,116,0.05);
+}
+.pf-logo-text { font-size: 1.4rem; font-weight: 900; letter-spacing: 4px; color: #d4a574; line-height: 1; }
+.pf-logo-sub  { font-size: 0.6rem; font-weight: 500; letter-spacing: 3px; color: rgba(212,165,116,0.6); margin-top: 3px; }
+.pf-header-center { text-align: center; }
+.pf-title    { font-size: 1.25rem; font-weight: 700; color: #f1f5f9; letter-spacing: -0.02em; margin-bottom: 4px; }
+.pf-subtitle { font-size: 0.72rem; color: #d4a574; letter-spacing: 0.08em; text-transform: uppercase; font-weight: 500; }
+.pf-header-meta { display: flex; flex-direction: column; gap: 6px; }
+.pf-meta-row { display: flex; align-items: center; gap: 8px; justify-content: flex-end; }
+.pf-meta-label { font-size: 0.65rem; text-transform: uppercase; letter-spacing: 0.06em; color: #64748b; font-weight: 500; min-width: 32px; }
+.pf-num { font-family: monospace; color: #d4a574; font-size: 0.78rem; font-weight: 600; }
+.pf-input-inline {
+  background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 6px; color: #e2e8f0; padding: 3px 7px;
+  font-size: 0.78rem; width: 128px; font-family: inherit;
+}
+
+/* ---- GOLD DIVIDER ---- */
+.pf-divider-gold { height: 1.5px; background: linear-gradient(90deg,transparent,#d4a574,transparent); opacity: 0.35; }
+
+/* ---- SECTION ---- */
+.pf-section { padding: 18px 36px; border-bottom: 1px solid rgba(255,255,255,0.04); }
+.pf-section-border { border-left: 1px solid rgba(255,255,255,0.05); }
+.pf-section-tipo { padding: 14px 36px; }
+.pf-section-obs  { padding: 16px 36px; }
+.pf-section-title {
+  display: flex; align-items: center; gap: 10px;
+  font-size: 0.67rem; letter-spacing: 0.1em; text-transform: uppercase;
+  font-weight: 700; color: #94a3b8; margin-bottom: 14px;
+}
+.pf-num-badge {
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 20px; height: 20px; border-radius: 5px;
+  background: rgba(212,165,116,0.12); color: #d4a574;
+  font-size: 0.65rem; font-weight: 800; border: 1px solid rgba(212,165,116,0.2); flex-shrink: 0;
+}
+
+/* ---- TWO COL ---- */
+.pf-two-col { display: grid; grid-template-columns: 1fr 1fr; }
+
+/* ---- INLINE FIELDS ---- */
+.pf-inline-fields { display: flex; flex-direction: column; gap: 10px; }
+.pf-field { display: flex; flex-direction: column; gap: 4px; }
+.pf-field-wide { grid-column: span 2; }
+.pf-label { font-size: 0.65rem; font-weight: 600; letter-spacing: 0.05em; text-transform: uppercase; color: #64748b; }
+.req { color: #d4a574; }
+.pf-input, .pf-select {
+  width: 100%; background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 7px; color: #e2e8f0; padding: 8px 10px; font-size: 0.85rem;
+  font-family: inherit; transition: border-color 0.2s; outline: none;
+}
+.pf-input:focus, .pf-select:focus { border-color: rgba(212,165,116,0.5); }
+.pf-readonly { opacity: 0.5; cursor: not-allowed; }
+.pf-select option { background: #1a2030; color: #e2e8f0; }
+.pf-textarea {
+  width: 100%; background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 7px; color: #e2e8f0; padding: 9px 10px; font-size: 0.85rem;
+  font-family: inherit; resize: vertical; outline: none; transition: border-color 0.2s;
+}
+.pf-textarea:focus { border-color: rgba(212,165,116,0.5); }
+.pf-mono { font-family: 'Courier New', monospace; font-size: 0.8rem; }
+.field-error { border-color: rgba(239,68,68,0.6) !important; }
+
+/* ---- TIPO ENTREGA ---- */
+.pf-tipo-row { display: flex; flex-wrap: wrap; gap: 8px; }
+.pf-tipo-chip {
+  display: inline-flex; align-items: center;
+  padding: 7px 14px; border-radius: 20px;
+  border: 1px solid rgba(255,255,255,0.1);
+  color: #94a3b8; cursor: pointer; font-size: 0.82rem; font-weight: 500;
+  transition: all 0.2s; user-select: none;
+}
+.pf-tipo-chip:hover { border-color: rgba(212,165,116,0.4); color: #d4a574; }
+.pf-tipo-chip.selected { border-color: #d4a574; background: rgba(212,165,116,0.1); color: #d4a574; font-weight: 700; }
+.pf-tipo-chip.err { border-color: rgba(239,68,68,0.5); }
+.pf-tipo-chip input[type="radio"] { display: none; }
+
+/* ---- EQUIPMENT TABLE ---- */
+.pf-eq-table { width: 100%; border-collapse: collapse; font-size: 0.82rem; }
+.pf-eq-table th {
+  text-align: left; padding: 6px 8px; font-size: 0.62rem;
+  text-transform: uppercase; letter-spacing: 0.06em; color: #64748b;
+  border-bottom: 1px solid rgba(255,255,255,0.08); font-weight: 700;
+}
+.pf-eq-table td { padding: 4px 4px; border-bottom: 1px solid rgba(255,255,255,0.04); vertical-align: middle; }
+.pf-td-input, .pf-td-select {
+  width: 100%; background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 5px; color: #e2e8f0; padding: 5px 7px;
+  font-size: 0.8rem; font-family: inherit; outline: none;
+}
+.pf-td-input:focus, .pf-td-select:focus { border-color: rgba(212,165,116,0.4); }
+.pf-td-num { width: 48px; text-align: center; }
+.pf-td-select option { background: #1a2030; }
+.pf-btn-rm {
+  background: rgba(239,68,68,0.1); border: none; color: #f87171;
+  width: 22px; height: 22px; border-radius: 5px; cursor: pointer; font-weight: 700;
+  font-size: 0.9rem; line-height: 1; transition: background 0.2s;
+}
+.pf-btn-rm:hover { background: rgba(239,68,68,0.2); }
+
+.pf-eq-notes { margin-top: 8px; }
+.pf-eq-note { font-size: 0.75rem; color: #94a3b8; line-height: 1.5; margin-bottom: 2px; }
+
+.pf-eq-extra { margin-top: 12px; display: flex; flex-direction: column; gap: 6px; }
+.pf-eq-acc-row { display: flex; align-items: center; gap: 8px; }
+.pf-eq-acc-label { font-size: 0.65rem; color: #64748b; font-weight: 600; text-transform: uppercase; white-space: nowrap; }
+.pf-btn-add {
+  display: flex; align-items: center; justify-content: center;
+  width: 100%; margin-top: 10px; padding: 9px;
+  background: rgba(212,165,116,0.05); border: 1px dashed rgba(212,165,116,0.3);
+  color: #d4a574; border-radius: 8px; cursor: pointer; font-size: 0.82rem; font-weight: 600;
+  transition: all 0.2s;
+}
+.pf-btn-add:hover { background: rgba(212,165,116,0.1); }
+
+/* ---- CONDITIONS ---- */
+.pf-conditions { padding: 12px 36px; border-bottom: 1px solid rgba(255,255,255,0.04); }
+.pf-conditions-text { font-size: 0.74rem; color: #64748b; line-height: 1.65; font-style: italic; }
+
+/* ---- SIGNATURES ---- */
+.pf-signatures {
+  display: grid; grid-template-columns: 1fr 1px 1fr;
+  padding: 22px 36px;
+}
+.pf-sig-divider { background: rgba(255,255,255,0.06); margin: 0 24px; }
+.pf-sig-block { display: flex; flex-direction: column; }
+.pf-sig-area {
+  height: 70px; border-bottom: 1.5px solid rgba(255,255,255,0.2);
+  margin-bottom: 12px; position: relative;
+}
+.pf-sig-area::after {
+  content: 'Firma'; position: absolute; bottom: 5px; left: 0;
+  font-size: 0.6rem; color: rgba(255,255,255,0.1); text-transform: uppercase; letter-spacing: 0.06em;
+}
+.pf-sig-info { display: flex; flex-direction: column; gap: 4px; margin-bottom: 8px; }
+.pf-sig-info span { font-size: 0.75rem; color: #cbd5e1; }
+.pf-sig-role { font-size: 0.65rem; text-transform: uppercase; letter-spacing: 0.1em; color: #d4a574; font-weight: 700; }
+
+/* ---- FOOTER ---- */
+.pf-footer { padding: 12px 36px 20px; text-align: center; }
+.pf-footer-line { height: 1px; background: rgba(255,255,255,0.05); margin-bottom: 10px; }
+.pf-footer-text { font-size: 0.65rem; color: #475569; letter-spacing: 0.04em; font-style: italic; }
+
+
+/* ============================================================
+   PRINT STYLES – A4 Portrait, 1 page
+   ============================================================ */
+@media print {
+  @page { size: A4 portrait; margin: 9mm 12mm; }
+
+  * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+  .no-print, .pf-topbar { display: none !important; }
+
+  body, .pf-wrapper {
+    background: #fff !important; padding: 0 !important; margin: 0 !important;
+  }
+
+  .pf-doc {
+    max-width: 100% !important; margin: 0 !important;
+    background: #fff !important; border: none !important;
+    border-radius: 0 !important; box-shadow: none !important;
+    font-size: 8.5pt !important;
+  }
+
+  /* ---- HEADER PRINT ---- */
+  .pf-header {
+    background: #fff !important; padding: 6pt 10pt 5pt !important;
+    border-bottom: 1.5pt solid #1a1a1a !important;
+    grid-template-columns: 56pt 1fr 130pt !important; gap: 10pt !important;
+  }
+  .pf-logo-box {
+    width: 48pt !important; height: 48pt !important;
+    border: 1.2pt solid #c8a06a !important; border-radius: 6pt !important;
+    background: none !important;
+  }
+  .pf-logo-text { color: #c8a06a !important; font-size: 11pt !important; letter-spacing: 3px !important; }
+  .pf-logo-sub  { color: #c8a06a !important; font-size: 5pt !important; }
+  .pf-title     { color: #111 !important; font-size: 11pt !important; margin-bottom: 2pt !important; }
+  .pf-subtitle  { color: #c8a06a !important; font-size: 6pt !important; }
+  .pf-meta-label { color: #888 !important; font-size: 6pt !important; }
+  .pf-num       { color: #111 !important; font-size: 7pt !important; }
+  .pf-input-inline {
+    background: transparent !important; border: none !important;
+    border-bottom: 0.6pt solid #999 !important; color: #111 !important;
+    font-size: 7.5pt !important; border-radius: 0 !important; padding: 1pt 0 !important;
+  }
+
+  .pf-divider-gold { background: #c8a06a !important; opacity: 0.4 !important; }
+
+  /* ---- SECTIONS PRINT ---- */
+  .pf-section, .pf-section-tipo, .pf-section-obs {
+    padding: 5pt 10pt !important; border-bottom: 0.4pt solid #e0e0e0 !important;
+    break-inside: avoid;
+  }
+  .pf-section-border { border-left: 0.4pt solid #ddd !important; }
+  .pf-section-title { margin-bottom: 5pt !important; font-size: 5.5pt !important; color: #666 !important; }
+  .pf-num-badge { background: #f5e9d9 !important; color: #8a5e2b !important; border-color: #c8a06a !important; font-size: 5.5pt !important; width: 14pt !important; height: 14pt !important; }
+
+  /* ---- FIELDS PRINT ---- */
+  .pf-label { color: #555 !important; font-size: 5.5pt !important; }
+  .pf-input, .pf-select, .pf-textarea {
+    background: transparent !important; border: none !important;
+    border-bottom: 0.5pt solid #aaa !important; border-radius: 0 !important;
+    color: #111 !important; padding: 1pt 0 2pt !important; font-size: 8pt !important;
+  }
+  .pf-textarea { min-height: 18pt !important; }
+
+  /* ---- TIPO ENTREGA PRINT ---- */
+  .pf-tipo-chip {
+    padding: 3pt 8pt !important; font-size: 7pt !important;
+    border: 0.5pt solid #ccc !important; color: #444 !important; background: #fff !important;
+    border-radius: 10pt !important;
+  }
+  .pf-tipo-chip.selected {
+    border-color: #c8a06a !important; background: #fdf5ea !important;
+    color: #7a4f1e !important; font-weight: 700 !important;
+  }
+
+  /* ---- EQUIPMENT TABLE PRINT ---- */
+  .pf-eq-table { font-size: 7.5pt !important; }
+  .pf-eq-table th {
+    font-size: 5.5pt !important; padding: 3pt 4pt !important;
+    border-bottom: 0.8pt solid #1a1a1a !important; color: #444 !important;
+  }
+  .pf-eq-table td { padding: 2pt 4pt !important; border-bottom: 0.3pt solid #ddd !important; }
+  .pf-td-input, .pf-td-select {
+    background: transparent !important; border: none !important;
+    font-size: 7.5pt !important; color: #111 !important; padding: 0 !important;
+    border-bottom: 0.4pt solid #ccc !important; border-radius: 0 !important;
+  }
+  .pf-eq-note { font-size: 6.5pt !important; color: #555 !important; }
+
+  /* ---- CONDITIONS PRINT ---- */
+  .pf-conditions { padding: 4pt 10pt !important; border-bottom: 0.4pt solid #e0e0e0 !important; break-inside: avoid; }
+  .pf-conditions-text { font-size: 6.5pt !important; color: #555 !important; line-height: 1.5 !important; }
+
+  /* ---- SIGNATURES PRINT ---- */
+  .pf-signatures { padding: 8pt 10pt !important; break-inside: avoid; }
+  .pf-sig-divider { background: #ccc !important; }
+  .pf-sig-area {
+    height: 42pt !important; border-bottom: 0.8pt solid #333 !important;
+    margin-bottom: 5pt !important;
+  }
+  .pf-sig-area::after { color: #ccc !important; font-size: 5.5pt !important; }
+  .pf-sig-info span { font-size: 7pt !important; color: #111 !important; }
+  .pf-sig-role { font-size: 5.5pt !important; color: #8a5e2b !important; }
+
+  /* ---- FOOTER PRINT ---- */
+  .pf-footer { padding: 4pt 10pt 6pt !important; }
+  .pf-footer-line { background: #ddd !important; margin-bottom: 4pt !important; }
+  .pf-footer-text { font-size: 6pt !important; color: #888 !important; }
+}

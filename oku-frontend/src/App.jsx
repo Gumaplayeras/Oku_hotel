@@ -3,9 +3,9 @@ import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-d
 import Login from './pages/Login';
 import Dashboard from './pages/Dashboard';
 import Equipos from './pages/Equipos';
-import Sims from './pages/Sims';
 import Empleados from './pages/Empleados';
-import Incidencias from './pages/Incidencias';
+import Partes from './pages/Partes';
+import ParteForm from './pages/ParteForm';
 import PrivateRoute from './components/PrivateRoute';
 import MainLayout from './components/Layout/MainLayout';
 import Movimientos from './pages/Movimientos';
@@ -45,18 +45,6 @@ function App() {
           }
         />
 
-        {/* Sims */}
-        <Route
-          path="/sims"
-          element={
-            <PrivateRoute>
-              <MainLayout>
-                <Sims />
-              </MainLayout>
-            </PrivateRoute>
-          }
-        />
-
         {/* Empleados */}
         <Route
           path="/empleados"
@@ -69,14 +57,34 @@ function App() {
           }
         />
 
-        {/* Incidencias */}
+        {/* Partes - lista */}
         <Route
-          path="/incidencias"
+          path="/partes"
           element={
             <PrivateRoute>
               <MainLayout>
-                <Incidencias />
+                <Partes />
               </MainLayout>
+            </PrivateRoute>
+          }
+        />
+
+        {/* Partes - nuevo parte de entrega */}
+        <Route
+          path="/partes/nuevo"
+          element={
+            <PrivateRoute>
+              <ParteForm />
+            </PrivateRoute>
+          }
+        />
+
+        {/* Partes - editar/ver parte existente */}
+        <Route
+          path="/partes/:id"
+          element={
+            <PrivateRoute>
+              <ParteForm />
             </PrivateRoute>
           }
         />

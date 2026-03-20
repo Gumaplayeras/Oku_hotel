@@ -31,7 +31,7 @@ export default function Header() {
       } catch (e) {
         // Redirige a login si no estamos autenticados
         if (e?.response?.status === 401) {
-          try { await logout(); } catch {}
+          try { await logout(); } catch { }
           if (!cancelled) navigate('/login');
         } else {
           console.error('Error cargando usuario', e);
@@ -56,26 +56,25 @@ export default function Header() {
 
   const displayName = user
     ? ((user.first_name || user.last_name)
-        ? `${user.first_name || ''} ${user.last_name || ''}`.trim()
-        : (user.username || ''))
+      ? `${user.first_name || ''} ${user.last_name || ''}`.trim()
+      : (user.username || ''))
     : '';
 
   const avatarInitials = user
     ? ((user.first_name && user.last_name)
-        ? `${user.first_name[0]}${user.last_name[0]}`.toUpperCase()
-        : (user.username ? user.username.slice(0, 2).toUpperCase() : 'IT'))
+      ? `${user.first_name[0]}${user.last_name[0]}`.toUpperCase()
+      : (user.username ? user.username.slice(0, 2).toUpperCase() : 'IT'))
     : 'IT';
 
   const navItems = [
     { text: 'Dashboard', path: '/dashboard' },
     { text: 'Equipos', path: '/equipos' },
     { text: 'Empleados', path: '/empleados' },
+    { text: 'Partes', path: '/partes' },
     { text: 'Redes', path: '/redes' },
-    { text: 'SIMS', path: '/sims' },
-    { text: 'Incidencias', path: '/incidencias' },
   ];
 
-  // Logo elegante con badge de ubicación
+
   const Logo = () => (
     <Box
       sx={{

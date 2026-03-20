@@ -1,5 +1,6 @@
 from django.db import models
 from django.conf import settings
+import uuid
 
 class Departamento(models.Model):
     nombre = models.CharField(max_length=100)
@@ -217,3 +218,69 @@ class Switch(models.Model):
 
     def __str__(self):
         return f"{self.nombre} ({self.ip}) - {self.marca} - Planta {self.planta} {self.lugar}"
+
+class Parte(models.Model):
+    ESTADOS = [
+        ('borrador', 'Borrador'),
+        ('pendiente', 'Pendiente'),
+        ('en_proceso', 'En proceso'),
+        ('resuelto', 'Resuelto'),
+        ('cancelado', 'Cancelado'),
+    ]
+
+    PRIORIDADES = [
+        ('baja', 'Baja'),
+        ('media', 'Media'),
+        ('alta', 'Alta'),
+    ]
+
+    # Identificación
+    numero_parte = models.CharField(max_length=50, unique=True, blank=True)
+    titulo = models.CharField(max_length=255, blank=True)
+    estado = models.CharField(max_length=20, choices=ESTADOS, default='borrador')
+    prioridad = models.CharField(max_length=10, choices=PRIORIDADES, default='media')
+    tipo_entrega = models.CharField(max_length=100, blank=True, null=True)
+
+    # Emisor
+    emisor_nombre = models.CharField(max_length=200, blank=True, null=True)
+    emisor_rol = models.CharField(max_length=100, blank=True, null=True)
+    solicitante = models.CharField(max_length=200, blank=True, null=True)  # compat
+
+    # Receptor
+    receptor_nombre = models.CharField(max_length=200, blank=True, null=True)
+    receptor_rol = models.CharField(max_length=100, blank=True, null=True)
+    receptor_departamento = models.CharField(max_length=100, blank=True, null=True)
+    receptor_ubicacion = models.CharField(max_length=200, blank=True, null=True)
+
+    # Contenido
+    equipos_json = models.TextField(blank=True, null=True)  # JSON list of equipment
+    descripcion = models.TextField(blank=True, null=True)
+    observaciones_generales = models.TextField(blank=True, null=True)
+
+    # Fechas
+    fecha_apertura = models.DateTimeField(auto_now_add=True)
+    fecha_cierre = models.DateTimeField(blank=True, null=True)
+
+    # FK opcionales
+    equipo = models.ForeignKey('EquipoGeneral', on_delete=models.SET_NULL, null=True, blank=True, related_name='partes')
+    asignado_a = models.ForeignKey('Empleado', on_delete=models.SET_NULL, null=True, blank=True, related_name='partes')
+
+    class Meta:
+        ordering = ['-fecha_apertura']
+        verbose_name = 'Parte'
+        verbose_name_plural = 'Partes'
+
+    def save(self, *args, **kwargs):
+        is_new = self._state.adding
+        if is_new and not self.numero_parte:
+            # Asignar un valor temporal único para evitar IntegrityError en save()
+            self.numero_parte = f"TEMP-{str(uuid.uuid4())[:8]}"
+            
+        super().save(*args, **kwargs)
+        
+        if is_new and self.numero_parte.startswith("TEMP-"):
+            self.numero_parte = f"OKU-IT-{self.id}"
+            self.save(update_fields=['numero_parte'])
+
+    def __str__(self):
+        return f"{self.numero_parte or self.id} – {self.titulo or 'Sin título'}"
