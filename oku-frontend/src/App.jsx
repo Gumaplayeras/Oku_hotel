@@ -11,6 +11,7 @@ import MainLayout from './components/Layout/MainLayout';
 import Movimientos from './pages/Movimientos';
 import Sidebar from './components/Sidebar/Sidebar';
 import Redes from "./pages/Redes";
+import SwitchDetail from "./pages/SwitchDetail";
 import Profile from './pages/Profile';
 import UserManagement from './pages/UserManagement';
 
@@ -112,6 +113,18 @@ function App() {
             <PrivateRoute>
               <MainLayout>
                 <Redes />
+              </MainLayout>
+            </PrivateRoute>
+          }
+        />
+
+        {/* Detalle Switch */}
+        <Route
+          path="/redes/switches/:ip"
+          element={
+            <PrivateRoute>
+              <MainLayout>
+                <SwitchDetail />
               </MainLayout>
             </PrivateRoute>
           }
