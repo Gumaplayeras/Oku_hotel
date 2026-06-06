@@ -63,12 +63,13 @@
   border-bottom: 1px solid rgba(212,165,116,0.1);
 }
 .pf-logo-box {
-  display: flex; flex-direction: column; align-items: center; justify-content: center;
-  width: 72px; height: 72px; border: 1.5px solid rgba(212,165,116,0.6);
-  border-radius: 12px; background: rgba(212,165,116,0.05);
+  display: flex; align-items: center; justify-content: center;
+  width: 80px; height: 80px;
 }
-.pf-logo-text { font-size: 1.4rem; font-weight: 900; letter-spacing: 4px; color: #d4a574; line-height: 1; }
-.pf-logo-sub  { font-size: 0.6rem; font-weight: 500; letter-spacing: 3px; color: rgba(212,165,116,0.6); margin-top: 3px; }
+.pf-logo-img {
+  width: 100%; height: 100%; object-fit: contain;
+  filter: invert(1) sepia(0.3) saturate(2) hue-rotate(10deg) brightness(1.1);
+}
 .pf-header-center { text-align: center; }
 .pf-title    { font-size: 1.25rem; font-weight: 700; color: #f1f5f9; letter-spacing: -0.02em; margin-bottom: 4px; }
 .pf-subtitle { font-size: 0.72rem; color: #d4a574; letter-spacing: 0.08em; text-transform: uppercase; font-weight: 500; }
@@ -142,6 +143,20 @@
 .pf-tipo-chip.err { border-color: rgba(239,68,68,0.5); }
 .pf-tipo-chip input[type="radio"] { display: none; }
 
+/* ---- SUSTITUCIÓN BOX ---- */
+.pf-sust-box {
+  margin-top: 14px; padding: 14px 16px;
+  background: rgba(212,165,116,0.04); border: 1px solid rgba(212,165,116,0.2);
+  border-radius: 10px;
+}
+.pf-sust-title {
+  font-size: 0.68rem; font-weight: 700; text-transform: uppercase;
+  letter-spacing: 0.08em; color: #d4a574; margin-bottom: 10px;
+}
+.pf-sust-row {
+  display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px;
+}
+
 /* ---- EQUIPMENT TABLE ---- */
 .pf-eq-table { width: 100%; border-collapse: collapse; font-size: 0.82rem; }
 .pf-eq-table th {
@@ -210,10 +225,10 @@
 
 
 /* ============================================================
-   PRINT STYLES – A4 Portrait, 1 page
+   PRINT STYLES – A4 Portrait, cabe en 1 página con margen generoso
    ============================================================ */
 @media print {
-  @page { size: A4 portrait; margin: 9mm 12mm; }
+  @page { size: A4 portrait; margin: 12mm 14mm; }
 
   * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
   .no-print, .pf-topbar { display: none !important; }
@@ -226,94 +241,113 @@
     max-width: 100% !important; margin: 0 !important;
     background: #fff !important; border: none !important;
     border-radius: 0 !important; box-shadow: none !important;
-    font-size: 8.5pt !important;
+    font-size: 9.5pt !important;
   }
 
   /* ---- HEADER PRINT ---- */
   .pf-header {
-    background: #fff !important; padding: 6pt 10pt 5pt !important;
+    background: #fff !important; padding: 0 0 8pt !important;
     border-bottom: 1.5pt solid #1a1a1a !important;
-    grid-template-columns: 56pt 1fr 130pt !important; gap: 10pt !important;
+    grid-template-columns: 66pt 1fr 150pt !important; gap: 14pt !important;
+    align-items: center !important;
   }
   .pf-logo-box {
-    width: 48pt !important; height: 48pt !important;
-    border: 1.2pt solid #c8a06a !important; border-radius: 6pt !important;
-    background: none !important;
+    width: 58pt !important; height: 58pt !important;
+    border: none !important; background: none !important;
   }
-  .pf-logo-text { color: #c8a06a !important; font-size: 11pt !important; letter-spacing: 3px !important; }
-  .pf-logo-sub  { color: #c8a06a !important; font-size: 5pt !important; }
-  .pf-title     { color: #111 !important; font-size: 11pt !important; margin-bottom: 2pt !important; }
-  .pf-subtitle  { color: #c8a06a !important; font-size: 6pt !important; }
-  .pf-meta-label { color: #888 !important; font-size: 6pt !important; }
-  .pf-num       { color: #111 !important; font-size: 7pt !important; }
+  .pf-logo-img {
+    width: 100% !important; height: 100% !important; object-fit: contain !important;
+    filter: none !important;
+  }
+  .pf-title     { color: #111 !important; font-size: 13pt !important; margin-bottom: 3pt !important; font-weight: 800 !important; }
+  .pf-subtitle  { color: #a07040 !important; font-size: 7.5pt !important; }
+  .pf-meta-label { color: #777 !important; font-size: 7pt !important; min-width: 40pt !important; }
+  .pf-num       { color: #111 !important; font-size: 9pt !important; font-weight: 700 !important; }
   .pf-input-inline {
     background: transparent !important; border: none !important;
-    border-bottom: 0.6pt solid #999 !important; color: #111 !important;
-    font-size: 7.5pt !important; border-radius: 0 !important; padding: 1pt 0 !important;
+    border-bottom: 0.7pt solid #999 !important; color: #111 !important;
+    font-size: 8.5pt !important; border-radius: 0 !important; padding: 1pt 0 !important;
+    width: 110pt !important;
   }
 
-  .pf-divider-gold { background: #c8a06a !important; opacity: 0.4 !important; }
+  .pf-divider-gold { background: #c8a06a !important; opacity: 0.5 !important; height: 1.5pt !important; }
 
   /* ---- SECTIONS PRINT ---- */
   .pf-section, .pf-section-tipo, .pf-section-obs {
-    padding: 5pt 10pt !important; border-bottom: 0.4pt solid #e0e0e0 !important;
+    padding: 7pt 12pt !important; border-bottom: 0.4pt solid #e0e0e0 !important;
     break-inside: avoid;
   }
-  .pf-section-border { border-left: 0.4pt solid #ddd !important; }
-  .pf-section-title { margin-bottom: 5pt !important; font-size: 5.5pt !important; color: #666 !important; }
-  .pf-num-badge { background: #f5e9d9 !important; color: #8a5e2b !important; border-color: #c8a06a !important; font-size: 5.5pt !important; width: 14pt !important; height: 14pt !important; }
+  .pf-section-border { border-left: 0.4pt solid #ccc !important; }
+  .pf-section-title { margin-bottom: 6pt !important; font-size: 6.5pt !important; color: #555 !important; }
+  .pf-num-badge {
+    background: #f5e9d9 !important; color: #8a5e2b !important;
+    border-color: #c8a06a !important; font-size: 6pt !important;
+    width: 15pt !important; height: 15pt !important;
+  }
 
   /* ---- FIELDS PRINT ---- */
-  .pf-label { color: #555 !important; font-size: 5.5pt !important; }
+  .pf-inline-fields { gap: 7pt !important; }
+  .pf-label { color: #555 !important; font-size: 6.5pt !important; }
   .pf-input, .pf-select, .pf-textarea {
     background: transparent !important; border: none !important;
-    border-bottom: 0.5pt solid #aaa !important; border-radius: 0 !important;
-    color: #111 !important; padding: 1pt 0 2pt !important; font-size: 8pt !important;
+    border-bottom: 0.6pt solid #aaa !important; border-radius: 0 !important;
+    color: #111 !important; padding: 1.5pt 0 2pt !important; font-size: 9pt !important;
   }
-  .pf-textarea { min-height: 18pt !important; }
+  .pf-textarea { min-height: 22pt !important; }
+  .pf-readonly { opacity: 0.6 !important; }
 
   /* ---- TIPO ENTREGA PRINT ---- */
   .pf-tipo-chip {
-    padding: 3pt 8pt !important; font-size: 7pt !important;
-    border: 0.5pt solid #ccc !important; color: #444 !important; background: #fff !important;
-    border-radius: 10pt !important;
+    padding: 3pt 9pt !important; font-size: 8pt !important;
+    border: 0.5pt solid #ccc !important; color: #555 !important; background: #fff !important;
+    border-radius: 12pt !important;
   }
   .pf-tipo-chip.selected {
     border-color: #c8a06a !important; background: #fdf5ea !important;
     color: #7a4f1e !important; font-weight: 700 !important;
   }
 
-  /* ---- EQUIPMENT TABLE PRINT ---- */
-  .pf-eq-table { font-size: 7.5pt !important; }
-  .pf-eq-table th {
-    font-size: 5.5pt !important; padding: 3pt 4pt !important;
-    border-bottom: 0.8pt solid #1a1a1a !important; color: #444 !important;
+  /* ---- SUSTITUCIÓN BOX PRINT ---- */
+  .pf-sust-box {
+    margin-top: 6pt !important; padding: 6pt 8pt !important;
+    border: 0.6pt solid #c8a06a !important; border-radius: 5pt !important;
+    background: #fffbf5 !important;
   }
-  .pf-eq-table td { padding: 2pt 4pt !important; border-bottom: 0.3pt solid #ddd !important; }
+  .pf-sust-title { color: #8a5e2b !important; font-size: 6pt !important; margin-bottom: 5pt !important; }
+  .pf-sust-row { grid-template-columns: repeat(4, 1fr) !important; gap: 8pt !important; }
+
+  /* ---- EQUIPMENT TABLE PRINT ---- */
+  .pf-eq-table { font-size: 8.5pt !important; }
+  .pf-eq-table th {
+    font-size: 6.5pt !important; padding: 4pt 5pt !important;
+    border-bottom: 1pt solid #1a1a1a !important; color: #333 !important;
+  }
+  .pf-eq-table td { padding: 3pt 5pt !important; border-bottom: 0.4pt solid #ddd !important; }
   .pf-td-input, .pf-td-select {
     background: transparent !important; border: none !important;
-    font-size: 7.5pt !important; color: #111 !important; padding: 0 !important;
+    font-size: 8.5pt !important; color: #111 !important; padding: 0 !important;
     border-bottom: 0.4pt solid #ccc !important; border-radius: 0 !important;
   }
-  .pf-eq-note { font-size: 6.5pt !important; color: #555 !important; }
+  .pf-eq-note { font-size: 7.5pt !important; color: #444 !important; }
 
   /* ---- CONDITIONS PRINT ---- */
-  .pf-conditions { padding: 4pt 10pt !important; border-bottom: 0.4pt solid #e0e0e0 !important; break-inside: avoid; }
-  .pf-conditions-text { font-size: 6.5pt !important; color: #555 !important; line-height: 1.5 !important; }
+  .pf-conditions { padding: 5pt 12pt !important; break-inside: avoid; }
+  .pf-conditions-text { font-size: 7.5pt !important; color: #444 !important; line-height: 1.6 !important; }
 
   /* ---- SIGNATURES PRINT ---- */
-  .pf-signatures { padding: 8pt 10pt !important; break-inside: avoid; }
-  .pf-sig-divider { background: #ccc !important; }
+  .pf-signatures { padding: 10pt 12pt !important; break-inside: avoid; }
+  .pf-sig-divider { background: #bbb !important; }
   .pf-sig-area {
-    height: 42pt !important; border-bottom: 0.8pt solid #333 !important;
-    margin-bottom: 5pt !important;
+    height: 52pt !important; border-bottom: 1pt solid #333 !important;
+    margin-bottom: 6pt !important;
   }
-  .pf-sig-area::after { color: #ccc !important; font-size: 5.5pt !important; }
-  .pf-sig-info span { font-size: 7pt !important; color: #111 !important; }
-  .pf-sig-role { font-size: 5.5pt !important; color: #8a5e2b !important; }
+  .pf-sig-area::after { color: #bbb !important; font-size: 6pt !important; }
+  .pf-sig-info { gap: 5pt !important; }
+  .pf-sig-info span { font-size: 8.5pt !important; color: #111 !important; }
+  .pf-sig-role { font-size: 6.5pt !important; color: #8a5e2b !important; margin-top: 2pt !important; }
 
   /* ---- FOOTER PRINT ---- */
-  .pf-footer { padding: 4pt 10pt 6pt !important; }
-  .pf-footer-line { background: #ddd !important; margin-bottom: 4pt !important; }
-  .pf-footer-text { font-size: 6pt !important; color: #888 !important; }
+  .pf-footer { padding: 5pt 12pt 6pt !important; }
+  .pf-footer-line { background: #ddd !important; margin-bottom: 5pt !important; }
+  .pf-footer-text { font-size: 7pt !important; color: #888 !important; }
 }

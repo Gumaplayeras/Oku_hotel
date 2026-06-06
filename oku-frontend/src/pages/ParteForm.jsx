@@ -1,14 +1,20 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { createParte, getParte, updateParte, deleteParte } from '../api/partes';
+import okuLogo from '../assets/oku_parte_logo.png';
 import './ParteForm.css';
 
-const ROLES_EMISOR = ['IT Manager', 'Deputy IT Manager', 'IT Technician', 'AV Manager', 'Otro'];
+const ROLES_EMISOR = [
+  'IT & AV Manager', 'Deputy IT & AV Manager',
+  'IT Technician', 'AV Technician', 'Otro'
+];
+
 const TIPOS_ENTREGA = ['Entrega definitiva', 'Préstamo temporal', 'Sustitución', 'Reposición', 'Otro'];
 const ESTADOS_EQUIPO = ['Nuevo', 'Bueno', 'Aceptable', 'Con incidencias'];
 const DEPARTAMENTOS = [
   'IT', 'Recepción', 'F&B', 'Housekeeping', 'Mantenimiento',
-  'Dirección', 'RRHH', 'Spa', 'Pool', 'Seguridad', 'Cocina', 'Administración', 'Otro'
+  'Dirección', 'RRHH', 'Spa', 'Pool', 'Seguridad', 'Cocina',
+  'Finance', 'Economato', 'Administración', 'Otro'
 ];
 
 const emptyEquipo = () => ({
@@ -16,7 +22,7 @@ const emptyEquipo = () => ({
   cantidad: 1, estado: 'Bueno', accesorios: '', observaciones: ''
 });
 
-
+const emptySust = () => ({ tipo: '', marca: '', modelo: '', serial: '' });
 
 export default function ParteForm() {
   const navigate = useNavigate();
@@ -24,33 +30,31 @@ export default function ParteForm() {
   const now = new Date();
   const todayISO = now.toISOString().slice(0, 10);
   const timeNow = now.toTimeString().slice(0, 5);
-  const [numParte, setNumParte] = useState('Autogenerado');
 
+  const [numParte, setNumParte] = useState('…');
   const [emisor, setEmisor] = useState({ nombre: '', rol: '', departamento: 'IT' });
   const [receptor, setReceptor] = useState({ nombre: '', rol: '', departamento: '', ubicacion: '' });
   const [fecha, setFecha] = useState(todayISO);
   const [hora, setHora] = useState(timeNow);
   const [tipoEntrega, setTipoEntrega] = useState('');
   const [equipos, setEquipos] = useState([emptyEquipo()]);
+  const [equipoSustituido, setEquipoSustituido] = useState(emptySust());
   const [observaciones, setObservaciones] = useState('');
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
   const [savedId, setSavedId] = useState(id || null);
   const [errors, setErrors] = useState({});
 
-  React.useEffect(() => {
+  /* ── Load existing OR auto-crear borrador para reservar número ── */
+  useEffect(() => {
     if (id) {
+      // Editar existente
       const fetchParte = async () => {
         try {
           const res = await getParte(id);
           const data = res.data || res;
           if (data.numero_parte) setNumParte(data.numero_parte);
-          
-          setEmisor({
-            nombre: data.emisor_nombre || data.solicitante || '',
-            rol: data.emisor_rol || '',
-            departamento: 'IT'
-          });
+          setEmisor({ nombre: data.emisor_nombre || '', rol: data.emisor_rol || '', departamento: 'IT' });
           setReceptor({
             nombre: data.receptor_nombre || '',
             rol: data.receptor_rol || '',
@@ -59,35 +63,49 @@ export default function ParteForm() {
           });
           setTipoEntrega(data.tipo_entrega || '');
           setObservaciones(data.observaciones_generales || '');
-          
           if (data.equipos_json) {
             try {
               const eq = JSON.parse(data.equipos_json);
               setEquipos(Array.isArray(eq) && eq.length > 0 ? eq : [emptyEquipo()]);
-            } catch(e){}
+            } catch (e) {}
           }
-          
+          if (data.equipo_sustituido_json) {
+            try { setEquipoSustituido(JSON.parse(data.equipo_sustituido_json)); } catch (e) {}
+          }
           if (data.fecha_apertura) {
             const d = new Date(data.fecha_apertura);
             setFecha(d.toISOString().slice(0, 10));
             setHora(d.toTimeString().slice(0, 5));
           }
-        } catch (err) {
-          console.error("Error loading parte", err);
-        }
+        } catch (err) { console.error('Error loading parte', err); }
       };
       fetchParte();
     } else {
-      // Intentar sacar el nombre del usuario logueado de localStorage
-      const savedProfile = localStorage.getItem('user_profile');
-      if (savedProfile) {
+      // Nuevo parte: cargar usuario y mostrar número preview SIN crear registro
+      const inicializar = async () => {
         try {
-          const u = JSON.parse(savedProfile);
-          const name = u.empleado?.nombre || u.user?.first_name || u.user?.username || '';
-          const role = u.empleado?.cargo || '';
-          setEmisor(prev => ({ ...prev, nombre: name, rol: role }));
-        } catch (e) {}
-      }
+          // Nombre usuario desde localStorage
+          let nombre = '', rol = '';
+          const savedProfile = localStorage.getItem('user_profile');
+          if (savedProfile) {
+            const u = JSON.parse(savedProfile);
+            nombre = u.empleado?.nombre || u.user?.first_name || u.user?.username || '';
+            rol = u.empleado?.cargo || '';
+          }
+          setEmisor(prev => ({ ...prev, nombre, rol }));
+
+          // Número preview: contar partes existentes + 1
+          const { getPartes } = await import('../api/partes');
+          const res = await getPartes();
+          const lista = res?.data?.results || res?.data || res?.results || res || [];
+          const count = Array.isArray(lista) ? lista.length : 0;
+          setNumParte(`OKU-IT-${count + 1}`);
+        } catch (err) {
+          console.error('Error inicializando parte:', err);
+          setNumParte('NUEVO');
+        }
+      };
+      inicializar();
     }
   }, [id]);
 
@@ -109,7 +127,7 @@ export default function ParteForm() {
   };
 
   const buildPayload = (estado = 'borrador') => ({
-    numero_parte: numParte === 'Autogenerado' ? '' : numParte,
+    numero_parte: numParte === '…' || numParte === 'BORRADOR' ? '' : numParte,
     titulo: `Entrega a ${receptor.nombre || '?'} – ${tipoEntrega || 'Parte'}`,
     estado,
     prioridad: 'media',
@@ -122,6 +140,7 @@ export default function ParteForm() {
     receptor_departamento: receptor.departamento,
     receptor_ubicacion: receptor.ubicacion,
     equipos_json: JSON.stringify(equipos),
+    equipo_sustituido_json: tipoEntrega === 'Sustitución' ? JSON.stringify(equipoSustituido) : '',
     observaciones_generales: observaciones,
     descripcion: observaciones,
   });
@@ -137,14 +156,9 @@ export default function ParteForm() {
       } else {
         res = await createParte(payload);
       }
-      
       const data = res?.data || res;
-      const returnedId = data?.id;
-      const returnedNum = data?.numero_parte;
-      
-      if (returnedNum) setNumParte(returnedNum);
-      if (returnedId) setSavedId(returnedId);
-      
+      if (data?.numero_parte) setNumParte(data.numero_parte);
+      if (data?.id) setSavedId(data.id);
       setSaved(true);
       setTimeout(() => setSaved(false), 4000);
       return true;
@@ -157,43 +171,19 @@ export default function ParteForm() {
   };
 
   const handlePrint = async () => {
-    if (!saved) await handleSave('pendiente');
-    window.print();
+    const ok = await handleSave('pendiente');
+    if (ok !== false) window.print();
   };
 
   const handleClear = () => {
     if (!window.confirm('¿Limpiar el formulario?')) return;
-    setEmisor({ nombre: '', rol: '', departamento: 'IT' });
-    // recargar usuario
-    const savedProfile = localStorage.getItem('user_profile');
-    if (savedProfile) {
-      try {
-        const u = JSON.parse(savedProfile);
-        const name = u.empleado?.nombre || u.user?.first_name || u.user?.username || '';
-        const role = u.empleado?.cargo || '';
-        setEmisor(prev => ({ ...prev, nombre: name, rol: role }));
-      } catch (e) {}
-    }
-    
-    setReceptor({ nombre: '', rol: '', departamento: '', ubicacion: '' });
-    setTipoEntrega('');
-    setEquipos([emptyEquipo()]);
-    setObservaciones('');
-    setErrors({});
-    setSaved(false);
-    setSavedId(null);
-    setNumParte('Autogenerado');
+    navigate('/partes/nuevo');
   };
 
   const handleDelete = async () => {
     if (!savedId) return;
-    if (!window.confirm("¿Seguro que deseas eliminar definitivamente este parte?")) return;
-    try {
-      await deleteParte(savedId);
-      navigate('/partes');
-    } catch (err) {
-      console.error("Error eliminando parte:", err);
-    }
+    if (!window.confirm('¿Eliminar definitivamente este parte?')) return;
+    try { await deleteParte(savedId); navigate('/partes'); } catch (err) { console.error(err); }
   };
 
   const hasErr = (key) => errors[key] ? 'field-error' : '';
@@ -211,7 +201,8 @@ export default function ParteForm() {
             </span>
           )}
           {savedId && (
-            <button className="pf-btn no-print" onClick={handleDelete} style={{ background: 'rgba(239, 68, 68, 0.1)', color: '#ef4444', border: '1px solid rgba(239, 68, 68, 0.3)' }}>
+            <button className="pf-btn no-print" onClick={handleDelete}
+              style={{ background: 'rgba(239,68,68,0.1)', color: '#ef4444', border: '1px solid rgba(239,68,68,0.3)' }}>
               Eliminar
             </button>
           )}
@@ -231,16 +222,15 @@ export default function ParteForm() {
         {/* HEADER */}
         <header className="pf-header">
           <div className="pf-logo-box">
-            <span className="pf-logo-text">OKU</span>
-            <span className="pf-logo-sub">IBIZA</span>
+            <img src={okuLogo} alt="OKU Ibiza" className="pf-logo-img" />
           </div>
           <div className="pf-header-center">
             <h1 className="pf-title">Parte de Entrega de Equipos</h1>
-            <p className="pf-subtitle">Departamento de IT · OKU Ibiza</p>
+            <p className="pf-subtitle">Departamento de IT &amp; AV · OKU Ibiza</p>
           </div>
           <div className="pf-header-meta">
             <div className="pf-meta-row">
-              <span className="pf-meta-label">Nº Parte</span>
+              <span className="pf-meta-label">Nº</span>
               <span className="pf-num">{numParte}</span>
             </div>
             <div className="pf-meta-row">
@@ -276,7 +266,7 @@ export default function ParteForm() {
               </div>
               <div className="pf-field">
                 <label className="pf-label">Departamento</label>
-                <input className="pf-input pf-readonly" value="IT" readOnly />
+                <input className="pf-input pf-readonly" value="IT &amp; AV" readOnly />
               </div>
             </div>
           </section>
@@ -302,10 +292,11 @@ export default function ParteForm() {
                   {DEPARTAMENTOS.map(d => <option key={d}>{d}</option>)}
                 </select>
               </div>
-              <div className="pf-field pf-field-wide">
+              <div className="pf-field">
                 <label className="pf-label">Ubicación / Área</label>
                 <input className="pf-input" value={receptor.ubicacion}
-                  onChange={e => setReceptor({ ...receptor, ubicacion: e.target.value })} placeholder="Ej.: Recepción, Habitación 301..." />
+                  onChange={e => setReceptor({ ...receptor, ubicacion: e.target.value })}
+                  placeholder="Ej.: Recepción, Habitación 301..." />
               </div>
             </div>
           </section>
@@ -322,12 +313,43 @@ export default function ParteForm() {
               </label>
             ))}
           </div>
+
+          {/* Campo sustitución */}
+          {tipoEntrega === 'Sustitución' && (
+            <div className="pf-sust-box">
+              <p className="pf-sust-title">Equipo que se sustituye / reemplaza</p>
+              <div className="pf-sust-row">
+                <div className="pf-field">
+                  <label className="pf-label">Tipo / Descripción</label>
+                  <input className="pf-input" value={equipoSustituido.tipo}
+                    onChange={e => setEquipoSustituido({ ...equipoSustituido, tipo: e.target.value })}
+                    placeholder="Portátil, Monitor..." />
+                </div>
+                <div className="pf-field">
+                  <label className="pf-label">Marca</label>
+                  <input className="pf-input" value={equipoSustituido.marca}
+                    onChange={e => setEquipoSustituido({ ...equipoSustituido, marca: e.target.value })}
+                    placeholder="Apple, Dell..." />
+                </div>
+                <div className="pf-field">
+                  <label className="pf-label">Modelo</label>
+                  <input className="pf-input" value={equipoSustituido.modelo}
+                    onChange={e => setEquipoSustituido({ ...equipoSustituido, modelo: e.target.value })} />
+                </div>
+                <div className="pf-field">
+                  <label className="pf-label">Nº Serie</label>
+                  <input className="pf-input pf-mono" value={equipoSustituido.serial}
+                    onChange={e => setEquipoSustituido({ ...equipoSustituido, serial: e.target.value })}
+                    placeholder="S/N..." />
+                </div>
+              </div>
+            </div>
+          )}
         </section>
 
         {/* EQUIPOS */}
         <section className="pf-section">
           <h2 className="pf-section-title"><span className="pf-num-badge">04</span> Detalle de la Entrega</h2>
-
           <table className="pf-eq-table">
             <thead>
               <tr>
@@ -363,12 +385,11 @@ export default function ParteForm() {
             </tbody>
           </table>
 
-          {/* Accesorios por equipo - solo si hay algo */}
           {equipos.some(e => e.accesorios || e.observaciones) && (
             <div className="pf-eq-notes">
               {equipos.map((eq, i) => (eq.accesorios || eq.observaciones) ? (
                 <p key={i} className="pf-eq-note">
-                  <strong>Equipo #{i+1}:</strong>
+                  <strong>Equipo #{i + 1}:</strong>
                   {eq.accesorios && <span> Accesorios: {eq.accesorios}.</span>}
                   {eq.observaciones && <span> Obs: {eq.observaciones}.</span>}
                 </p>
@@ -376,11 +397,10 @@ export default function ParteForm() {
             </div>
           )}
 
-          {/* Fila añadir accesorios inline - screen only */}
           <div className="pf-eq-extra no-print">
             {equipos.map((eq, i) => (
               <div key={i} className="pf-eq-acc-row">
-                <span className="pf-eq-acc-label">#{i+1} Accesorios:</span>
+                <span className="pf-eq-acc-label">#{i + 1} Accesorios:</span>
                 <input className="pf-td-input" value={eq.accesorios} onChange={e => updateEquipo(i, 'accesorios', e.target.value)} placeholder="Cargador, funda, cable HDMI..." />
                 <span className="pf-eq-acc-label">Obs.:</span>
                 <input className="pf-td-input" value={eq.observaciones} onChange={e => updateEquipo(i, 'observaciones', e.target.value)} placeholder="Notas del equipo..." />
@@ -402,7 +422,7 @@ export default function ParteForm() {
         {/* CONDITIONS */}
         <section className="pf-conditions">
           <p className="pf-conditions-text">
-            <strong>Condiciones:</strong> La persona receptora confirma haber recibido el material en las condiciones indicadas y se responsabiliza de su custodia y uso adecuado. Cualquier incidencia, pérdida o devolución deberá comunicarse al Departamento de IT de OKU Ibiza. Este documento tiene carácter de constancia interna de entrega.
+            <strong>Condiciones:</strong> La persona receptora confirma haber recibido el material en las condiciones indicadas y se responsabiliza de su custodia y uso adecuado. Cualquier incidencia, pérdida o devolución deberá comunicarse al Departamento de IT &amp; AV de OKU Ibiza. Este documento tiene carácter de constancia interna de entrega.
           </p>
         </section>
 
@@ -415,7 +435,7 @@ export default function ParteForm() {
               <span><strong>Cargo:</strong> {emisor.rol || '____________________________'}</span>
               <span><strong>Fecha:</strong> ____ / ____ / ________</span>
             </div>
-            <p className="pf-sig-role">EMISOR · Departamento IT</p>
+            <p className="pf-sig-role">EMISOR · Departamento IT &amp; AV</p>
           </div>
 
           <div className="pf-sig-divider" />
@@ -435,7 +455,7 @@ export default function ParteForm() {
         <footer className="pf-footer">
           <div className="pf-footer-line" />
           <p className="pf-footer-text">
-            Documento interno de control de entrega de material · Departamento de IT · OKU Ibiza · {numParte}
+            Documento interno de control de entrega de material · Departamento IT &amp; AV · OKU Ibiza · {numParte}
           </p>
         </footer>
 
