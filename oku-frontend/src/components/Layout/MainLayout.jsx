@@ -1,42 +1,26 @@
 import React from 'react';
-import { Box, CssBaseline } from '@mui/material';
-import Header from '../Header/Header';
+import { Box } from '@mui/material';
+import Sidebar from '../Sidebar/Sidebar';
+import TopBar from '../Header/Header';
+import { T } from '../../theme/theme';
 
-export default function Layout({ children }) {
+export default function MainLayout({ children }) {
   return (
-    <Box sx={{ 
-      display: 'flex', 
-      flexDirection: 'column',
-      minHeight: '100vh', 
-      background: `
-        linear-gradient(135deg, #0f1117 0%, #1a1d29 50%, #0f1117 100%)
-      `,
-      color: '#ffffff',
-      fontFamily: '"Inter", "Segoe UI", "Roboto", "Helvetica", "Arial", sans-serif',
-      position: 'relative',
-    }}>
-      <CssBaseline />
-      <Header />
-      <Box 
-        component="main" 
-        sx={{ 
-          flexGrow: 1,
-          p: { xs: 2, sm: 3, md: 4 },
-          overflowY: 'auto',
-          position: 'relative',
-          zIndex: 2,
-          '&::before': {
-            content: '""',
-            position: 'absolute',
-            top: 0,
-            left: '10%',
-            right: '10%',
-            height: '1px',
-            background: 'linear-gradient(90deg, transparent, rgba(255,255,255,0.1), transparent)'
-          }
-        }}
-      >
-        {children}
+    <Box sx={{ display: 'flex', height: '100vh', background: T.bg, overflow: 'hidden' }}>
+      <Sidebar />
+      <Box sx={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden', minWidth: 0 }}>
+        <TopBar />
+        <Box
+          component="main"
+          sx={{
+            flex: 1,
+            overflowY: 'auto',
+            p: { xs: 3, md: 3.5 },
+            background: T.bg,
+          }}
+        >
+          {children}
+        </Box>
       </Box>
     </Box>
   );

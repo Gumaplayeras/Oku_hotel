@@ -1,225 +1,117 @@
 import React from 'react';
 import useMyProfile from '../hooks/useMyProfile';
-import { Box, Card, CardContent, Typography, Chip, Divider, Grid, Avatar } from '@mui/material';
+import { Box, Typography, Chip, Divider, Grid, Avatar } from '@mui/material';
+import { T } from '../theme/theme';
+
+const FieldBlock = ({ label, value }) => (
+  <Box>
+    <Typography sx={{ fontFamily: T.fontDisp, fontSize: '0.5625rem', fontWeight: 600, letterSpacing: '0.14em', textTransform: 'uppercase', color: T.t3, mb: 0.75, display: 'block' }}>
+      {label}
+    </Typography>
+    <Typography sx={{ fontFamily: T.fontUI, color: T.t1, fontWeight: 500, fontSize: '0.9rem' }}>
+      {value || <span style={{ color: T.t3, fontStyle: 'italic' }}>—</span>}
+    </Typography>
+  </Box>
+);
 
 export default function Profile() {
   const { data, loading, error } = useMyProfile();
 
-  if (loading) return <Typography sx={{ p: 3 }}>Cargando perfil…</Typography>;
-  if (error)   return <Typography sx={{ p: 3 }} color="error">No se pudo cargar el perfil</Typography>;
-  if (!data)   return <Typography sx={{ p: 3 }}>Sin datos</Typography>;
+  if (loading) return (
+    <Box sx={{ p: 3 }}>
+      <Typography sx={{ fontFamily: T.fontUI, color: T.t3, fontSize: '0.875rem' }}>Cargando perfil…</Typography>
+    </Box>
+  );
+  if (error) return (
+    <Box sx={{ p: 3 }}>
+      <Typography sx={{ fontFamily: T.fontUI, color: T.red, fontSize: '0.875rem' }}>No se pudo cargar el perfil</Typography>
+    </Box>
+  );
+  if (!data) return null;
 
-  const {
-    username, first_name, last_name, email,
-    empleado
-  } = data;
+  const { username, first_name, last_name, email, empleado } = data;
+  const nombreCompleto = (first_name || last_name) ? `${first_name||''} ${last_name||''}`.trim() : username;
+  const initials = first_name ? (first_name[0] + (last_name?.[0] || '')).toUpperCase() : (username?.[0]?.toUpperCase() || 'U');
 
-  const nombreCompleto = (first_name || last_name)
-    ? `${first_name || ''} ${last_name || ''}`.trim()
-    : username;
-
-  // Helpers para mostrar campos del empleado con fallback
-  const depNombre = empleado?.departamento_nombre || empleado?.departamento || '-';
-  const delegacion = empleado?.delegacion || '-';
-  const rol = empleado?.rol || '—';
-  const tipoRol = empleado?.tipo_rol || '-';
+  const depNombre = empleado?.departamento_nombre || empleado?.departamento || null;
+  const delegacion = empleado?.delegacion || null;
+  const rol = empleado?.rol || null;
+  const tipoRol = empleado?.tipo_rol || null;
 
   return (
-    <Box sx={{ p: { xs: 2, sm: 3 }, display: 'flex', justifyContent: 'center' }}>
-      <Box sx={{ width: '100%', maxWidth: 920 }}>
-        <Card
-          sx={{
-            background: 'linear-gradient(180deg, rgba(17,24,39,0.95) 0%, rgba(15,18,23,0.95) 100%)',
-            color: '#fff',
-            border: '1px solid rgba(255,255,255,0.08)',
-            borderRadius: 3,
-            boxShadow: '0 20px 40px rgba(0,0,0,0.35)',
-            overflow: 'hidden'
-          }}
-        >
-          {/* Encabezado con avatar y nombre */}
-          <Box
-            sx={{
-              display: 'flex',
-              alignItems: 'center',
-              gap: 2,
-              p: 3,
-              borderBottom: '1px solid rgba(255,255,255,0.08)',
-              background:
-                'radial-gradient(1200px 200px at -10% -30%, rgba(212,165,116,0.10), transparent 60%), radial-gradient(1200px 200px at 120% -30%, rgba(201,151,91,0.08), transparent 60%)'
-            }}
-          >
-            <Avatar
-              sx={{
-                width: 72,
-                height: 72,
-                background: 'linear-gradient(135deg, #d4a574, #c9975b)',
-                border: '1px solid rgba(212,165,116,0.35)',
-                fontWeight: 800,
-                fontSize: 28,
-                boxShadow: '0 6px 18px rgba(212,165,116,0.35)'
-              }}
-            >
-              {(first_name?.[0] || username?.[0] || 'U').toUpperCase()}
-            </Avatar>
-            <Box sx={{ minWidth: 0 }}>
-              <Typography
-                variant="h5"
-                sx={{ fontWeight: 800, letterSpacing: '0.3px', lineHeight: 1.2 }}
-              >
-                {nombreCompleto}
-              </Typography>
-              <Typography
-                variant="body2"
-                sx={{ color: '#cbd5e1', mt: 0.5, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}
-                title={email}
-              >
-                {email || '-'}
-              </Typography>
-
-              <Box sx={{ mt: 1, display: 'flex', gap: 1, flexWrap: 'wrap' }}>
-                <Chip
-                  label={`@${username}`}
-                  size="small"
-                  sx={{
-                    background: 'rgba(255,255,255,0.06)',
-                    color: '#e5e7eb',
-                    border: '1px solid rgba(255,255,255,0.12)',
-                    fontWeight: 600
-                  }}
-                />
-                {delegacion && (
-                  <Chip
-                    label={`Delegación: ${delegacion}`}
-                    size="small"
-                    sx={{
-                      background: 'rgba(33,150,243,0.12)',
-                      color: '#e5e7eb',
-                      border: '1px solid rgba(33,150,243,0.25)',
-                      fontWeight: 600
-                    }}
-                  />
-                )}
-                {depNombre && (
-                  <Chip
-                    label={`Departamento: ${depNombre}`}
-                    size="small"
-                    sx={{
-                      background: 'rgba(100,181,246,0.12)',
-                      color: '#e5e7eb',
-                      border: '1px solid rgba(100,181,246,0.25)',
-                      fontWeight: 600
-                    }}
-                  />
-                )}
-              </Box>
+    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+      {/* Avatar card */}
+      <Box sx={{ background: T.bgCard, border: `1px solid ${T.border}`, borderRadius: '8px', overflow: 'hidden' }}>
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 2.5, p: 3 }}>
+          <Avatar sx={{
+            width: 64, height: 64,
+            background: `linear-gradient(135deg, ${T.accent}, #b8924a)`,
+            border: `1px solid ${T.accentBdr}`,
+            borderRadius: '8px',
+            fontFamily: T.fontMono,
+            fontWeight: 800, fontSize: 22, color: T.bg,
+            flexShrink: 0,
+          }}>
+            {initials}
+          </Avatar>
+          <Box sx={{ minWidth: 0 }}>
+            <Typography sx={{ fontFamily: T.fontDisp, fontWeight: 700, fontSize: '1.25rem', color: T.t1, lineHeight: 1.2, mb: 0.5 }}>
+              {nombreCompleto}
+            </Typography>
+            <Typography sx={{ fontFamily: T.fontUI, color: T.t3, fontSize: '0.8rem', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+              {email || '—'}
+            </Typography>
+            <Box sx={{ mt: 1, display: 'flex', gap: 1, flexWrap: 'wrap' }}>
+              <Chip label={`@${username}`} size="small" sx={{ background: 'rgba(255,255,255,0.05)', color: T.t2, border: `1px solid ${T.border}`, fontFamily: T.fontDisp, fontSize: '0.5625rem', fontWeight: 600, letterSpacing: '0.1em', height: 20, borderRadius: '4px' }} />
+              {delegacion && <Chip label={delegacion} size="small" sx={{ background: 'rgba(96,165,250,0.1)', color: T.blue, border: '1px solid rgba(96,165,250,0.2)', fontFamily: T.fontDisp, fontSize: '0.5625rem', fontWeight: 600, letterSpacing: '0.1em', height: 20, borderRadius: '4px' }} />}
             </Box>
           </Box>
-
-          <CardContent sx={{ p: { xs: 2.5, sm: 3.5 } }}>
-            <Grid container spacing={3}>
-              {/* Columna izquierda: datos de cuenta */}
-              <Grid item xs={12} md={6}>
-                <Typography variant="overline" sx={{ color: '#94a3b8' }}>
-                  Datos de cuenta
-                </Typography>
-                <Box sx={{ mt: 1.5, display: 'grid', rowGap: 1.25 }}>
-                  <Box>
-                    <Typography variant="caption" sx={{ color: '#94a3b8' }}>
-                      Usuario
-                    </Typography>
-                    <Typography variant="body1" sx={{ fontWeight: 600 }}>{username}</Typography>
-                  </Box>
-
-                  <Divider sx={{ my: 1, borderColor: 'rgba(255,255,255,0.06)' }} />
-
-                  <Box sx={{ display: 'flex', gap: 2 }}>
-                    <Box sx={{ flex: 1 }}>
-                      <Typography variant="caption" sx={{ color: '#94a3b8' }}>
-                        Nombre
-                      </Typography>
-                      <Typography variant="body1" sx={{ fontWeight: 600 }}>{first_name || '-'}</Typography>
-                    </Box>
-                    <Box sx={{ flex: 1 }}>
-                      <Typography variant="caption" sx={{ color: '#94a3b8' }}>
-                        Apellidos
-                      </Typography>
-                      <Typography variant="body1" sx={{ fontWeight: 600 }}>{last_name || '-'}</Typography>
-                    </Box>
-                  </Box>
-
-                  <Divider sx={{ my: 1, borderColor: 'rgba(255,255,255,0.06)' }} />
-
-                  <Box>
-                    <Typography variant="caption" sx={{ color: '#94a3b8' }}>
-                      Email
-                    </Typography>
-                    <Typography variant="body1" sx={{ fontWeight: 600 }}>{email || '-'}</Typography>
-                  </Box>
-                </Box>
-              </Grid>
-
-              {/* Columna derecha: datos laborales */}
-              <Grid item xs={12} md={6}>
-                <Typography variant="overline" sx={{ color: '#94a3b8' }}>
-                  Datos de empleado
-                </Typography>
-
-                {empleado ? (
-                  <Box sx={{ mt: 1.5, display: 'grid', rowGap: 1.25 }}>
-                    <Box sx={{ display: 'flex', gap: 2 }}>
-                      <Box sx={{ flex: 1 }}>
-                        <Typography variant="caption" sx={{ color: '#94a3b8' }}>
-                          Departamento
-                        </Typography>
-                        <Typography variant="body1" sx={{ fontWeight: 600 }}>{depNombre}</Typography>
-                      </Box>
-                      <Box sx={{ flex: 1 }}>
-                        <Typography variant="caption" sx={{ color: '#94a3b8' }}>
-                          Delegación
-                        </Typography>
-                        <Typography variant="body1" sx={{ fontWeight: 600 }}>{delegacion}</Typography>
-                      </Box>
-                    </Box>
-
-                    <Divider sx={{ my: 1, borderColor: 'rgba(255,255,255,0.06)' }} />
-
-                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-                      <Box sx={{ flex: 1 }}>
-                        <Typography variant="caption" sx={{ color: '#94a3b8' }}>
-                          Rol
-                        </Typography>
-                        <Box sx={{ mt: 0.5 }}>
-                          <Chip
-                            label={rol}
-                            size="small"
-                            sx={{
-                              background: 'rgba(212,165,116,0.15)',
-                              color: '#fff',
-                              border: '1px solid rgba(212,165,116,0.35)',
-                              fontWeight: 700
-                            }}
-                          />
-                        </Box>
-                      </Box>
-                      <Box sx={{ flex: 1 }}>
-                        <Typography variant="caption" sx={{ color: '#94a3b8' }}>
-                          Tipo de rol
-                        </Typography>
-                        <Typography variant="body1" sx={{ fontWeight: 600 }}>{tipoRol}</Typography>
-                      </Box>
-                    </Box>
-                  </Box>
-                ) : (
-                  <Typography sx={{ mt: 2, color: '#cbd5e1' }}>
-                    Este usuario no tiene datos de empleado asignados.
-                  </Typography>
-                )}
-              </Grid>
-            </Grid>
-          </CardContent>
-        </Card>
+        </Box>
       </Box>
+
+      {/* Account data */}
+      <Box sx={{ background: T.bgCard, border: `1px solid ${T.border}`, borderRadius: '8px', overflow: 'hidden' }}>
+        <Box sx={{ p: '20px' }}>
+          <Typography sx={{ fontFamily: T.fontDisp, fontSize: '0.5625rem', fontWeight: 600, letterSpacing: '0.14em', textTransform: 'uppercase', color: T.t3, mb: 2.5 }}>
+            Datos de cuenta
+          </Typography>
+          <Box sx={{ display: 'grid', rowGap: 2 }}>
+            <FieldBlock label="Usuario" value={username} />
+            <Divider sx={{ borderColor: T.border }} />
+            <Grid container spacing={2}>
+              <Grid item xs={6}><FieldBlock label="Nombre" value={first_name} /></Grid>
+              <Grid item xs={6}><FieldBlock label="Apellidos" value={last_name} /></Grid>
+            </Grid>
+            <Divider sx={{ borderColor: T.border }} />
+            <FieldBlock label="Email" value={email} />
+          </Box>
+        </Box>
+      </Box>
+
+      {/* Employee data */}
+      {empleado && (
+        <Box sx={{ background: T.bgCard, border: `1px solid ${T.border}`, borderRadius: '8px', overflow: 'hidden' }}>
+          <Box sx={{ p: '20px' }}>
+            <Typography sx={{ fontFamily: T.fontDisp, fontSize: '0.5625rem', fontWeight: 600, letterSpacing: '0.14em', textTransform: 'uppercase', color: T.t3, mb: 2.5 }}>
+              Datos de empleado
+            </Typography>
+            <Box sx={{ display: 'grid', rowGap: 2 }}>
+              <Grid container spacing={2}>
+                <Grid item xs={6}><FieldBlock label="Departamento" value={depNombre} /></Grid>
+                <Grid item xs={6}><FieldBlock label="Delegación" value={delegacion} /></Grid>
+              </Grid>
+              <Divider sx={{ borderColor: T.border }} />
+              <Grid container spacing={2} alignItems="center">
+                <Grid item xs={6}>
+                  <Typography sx={{ fontFamily: T.fontDisp, fontSize: '0.5625rem', fontWeight: 600, letterSpacing: '0.14em', textTransform: 'uppercase', color: T.t3, mb: 0.75, display: 'block' }}>Rol</Typography>
+                  {rol ? <Chip label={rol} size="small" sx={{ background: T.accentDim, color: T.accent, border: `1px solid ${T.accentBdr}`, fontFamily: T.fontDisp, fontSize: '0.5625rem', fontWeight: 600, letterSpacing: '0.1em', textTransform: 'uppercase', height: 20, borderRadius: '4px' }} /> : <Typography sx={{ fontFamily: T.fontUI, color: T.t3, fontStyle: 'italic', fontSize: '0.875rem' }}>—</Typography>}
+                </Grid>
+                <Grid item xs={6}><FieldBlock label="Tipo de rol" value={tipoRol} /></Grid>
+              </Grid>
+            </Box>
+          </Box>
+        </Box>
+      )}
     </Box>
   );
 }

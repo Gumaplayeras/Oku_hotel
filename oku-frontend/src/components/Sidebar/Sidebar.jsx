@@ -1,114 +1,239 @@
-import React from 'react';
-import { Drawer, List, ListItemButton, ListItemIcon, ListItemText, Toolbar, Box, Typography, alpha, useTheme } from '@mui/material';
-import DashboardIcon from '@mui/icons-material/Dashboard';
-import DevicesIcon from '@mui/icons-material/Devices';
-import PeopleIcon from '@mui/icons-material/People';
-import DescriptionIcon from '@mui/icons-material/Description';
-import { NavLink } from 'react-router-dom';
-import LanIcon from '@mui/icons-material/Lan';
+import React, { useState } from 'react';
+import { NavLink, useNavigate } from 'react-router-dom';
+import { Box, Typography, Tooltip } from '@mui/material';
+import { T } from '../../theme/theme';
 
-const Sidebar = ({ isOpen }) => {
-  const drawerWidth = 260;
-  const theme = useTheme(); // <-- Obtén el objeto del tema
+// Icons — outlined, refined
+import GridViewOutlinedIcon       from '@mui/icons-material/GridViewOutlined';
+import DevicesOutlinedIcon         from '@mui/icons-material/DevicesOutlined';
+import PeopleOutlinedIcon          from '@mui/icons-material/PeopleOutlined';
+import DescriptionOutlinedIcon     from '@mui/icons-material/DescriptionOutlined';
+import AccountTreeOutlinedIcon     from '@mui/icons-material/AccountTreeOutlined';
+import KeyboardDoubleArrowLeftIcon from '@mui/icons-material/KeyboardDoubleArrowLeft';
+import KeyboardDoubleArrowRightIcon from '@mui/icons-material/KeyboardDoubleArrowRight';
 
-  const menuItems = [
-    { text: 'Dashboard', icon: <DashboardIcon />, path: '/dashboard' },
-    { text: 'Equipos', icon: <DevicesIcon />, path: '/equipos' },
-    { text: 'Empleados', icon: <PeopleIcon />, path: '/empleados' },
-    { text: 'Partes', icon: <DescriptionIcon />, path: '/partes' },
-    { text: 'Redes', icon: <LanIcon />, path: '/redes' },
-  ];
+const W_OPEN   = 216;
+const W_CLOSED = 52;
 
-  const navLinkBaseStyle = {
-    textDecoration: 'none',
-    color: 'inherit',
-  };
+const NAV = [
+  { text: 'Dashboard', icon: GridViewOutlinedIcon,      path: '/',         end: true },
+  { text: 'Equipos',   icon: DevicesOutlinedIcon,       path: '/equipos' },
+  { text: 'Empleados', icon: PeopleOutlinedIcon,        path: '/empleados' },
+  { text: 'Partes',    icon: DescriptionOutlinedIcon,   path: '/partes' },
+  { text: 'Redes',     icon: AccountTreeOutlinedIcon,   path: '/redes' },
+];
+
+// OKU logo mark — a stylized grid (references hotel architecture)
+const OkuMark = ({ size = 20 }) => (
+  <svg width={size} height={size} viewBox="0 0 20 20" fill="none">
+    <rect x="1" y="1" width="7" height="7" rx="1.5" fill="currentColor" opacity="0.9" />
+    <rect x="12" y="1" width="7" height="7" rx="1.5" fill="currentColor" opacity="0.6" />
+    <rect x="1" y="12" width="7" height="7" rx="1.5" fill="currentColor" opacity="0.6" />
+    <rect x="12" y="12" width="7" height="7" rx="1.5" fill="currentColor" opacity="0.35" />
+  </svg>
+);
+
+export default function Sidebar() {
+  const [open, setOpen] = useState(true);
+  const navigate = useNavigate();
 
   return (
-    <Drawer
-      variant="permanent"
-      open={isOpen}
+    <Box
       sx={{
-        width: isOpen ? drawerWidth : (theme) => theme.spacing(9),
+        width: open ? W_OPEN : W_CLOSED,
         flexShrink: 0,
-        whiteSpace: 'nowrap',
-        transition: (theme) => theme.transitions.create('width', {
-          easing: theme.transitions.easing.sharp,
-          duration: theme.transitions.duration.enteringScreen,
-        }),
-        '& .MuiDrawer-paper': {
-          width: isOpen ? drawerWidth : (theme) => theme.spacing(9),
-          overflowX: 'hidden',
-          borderRight: 'none',
-          backgroundColor: theme.palette.background.paper, // Acceso directo al tema
-          boxShadow: theme.shadows[3], // Acceso directo al tema
-          transition: (theme) => theme.transitions.create('width', {
-            easing: theme.transitions.easing.sharp,
-            duration: theme.transitions.duration.leavingScreen,
-          }),
-        },
+        display: 'flex',
+        flexDirection: 'column',
+        background: T.bgCard,
+        borderRight: `1px solid ${T.border}`,
+        transition: 'width 0.2s cubic-bezier(0.4,0,0.2,1)',
+        overflow: 'hidden',
+        position: 'relative',
+        zIndex: 10,
       }}
     >
-      <Toolbar sx={{ justifyContent: 'center', py: 2 }}>
-        <Typography
-          variant="h5"
+      {/* ── Logo ───────────────────────────────────────────────── */}
+      <Box
+        sx={{
+          height: 52,
+          display: 'flex',
+          alignItems: 'center',
+          px: open ? 2 : 0,
+          justifyContent: open ? 'flex-start' : 'center',
+          borderBottom: `1px solid ${T.border}`,
+          cursor: 'pointer',
+          gap: 1.5,
+          flexShrink: 0,
+          transition: 'padding 0.2s',
+          '&:hover .logo-mark': { color: '#d4b56a' },
+        }}
+        onClick={() => navigate('/')}
+      >
+        <Box
+          className="logo-mark"
           sx={{
-            color: 'primary.main',
-            fontWeight: 'bold',
-            transition: '0.3s',
-            textShadow: '0px 0px 4px rgba(0, 168, 168, 0.4)',
+            color: T.accent,
+            display: 'flex',
+            alignItems: 'center',
+            flexShrink: 0,
+            transition: 'color 0.15s',
           }}
         >
-           {isOpen ? 'OKU' : 'O'}
-        </Typography>
-      </Toolbar>
-      <Box sx={{ px: isOpen ? 2 : 1.5, transition: '0.3s' }}>
-        <List>
-          {menuItems.map(item => (
-            <NavLink to={item.path} key={item.text} style={navLinkBaseStyle}>
-              {({ isActive }) => (
-                <ListItemButton
-                  sx={{
-                    mb: 1,
-                    py: 1.2,
-                    borderRadius: 2,
-                    backgroundColor: isActive
-                      ? alpha(theme.palette.primary.main, 0.12) // Acceso directo al color del tema
-                      : 'transparent',
-                    '&:hover': {
-                        backgroundColor: isActive
-                            ? alpha(theme.palette.primary.main, 0.2) // Acceso directo al color del tema
-                            : alpha(theme.palette.text.secondary, 0.08), // Acceso directo al color del tema
-                    },
-                  }}
-                >
-                  <ListItemIcon
-                    sx={{
-                      minWidth: 'auto',
-                      mr: isOpen ? 2 : 'auto',
-                      justifyContent: 'center',
-                      color: isActive ? 'primary.main' : 'text.secondary',
-                    }}
-                  >
-                    {item.icon}
-                  </ListItemIcon>
-                  <ListItemText
-                    primary={item.text}
-                    sx={{
-                      opacity: isOpen ? 1 : 0,
-                      transition: 'opacity 0.3s ease-in-out',
-                      color: isActive ? '#FFFFFF' : 'text.primary',
-                      fontWeight: isActive ? 600 : 400,
-                    }}
-                  />
-                </ListItemButton>
-              )}
-            </NavLink>
-          ))}
-        </List>
+          <OkuMark size={18} />
+        </Box>
+        {open && (
+          <Box sx={{ minWidth: 0 }}>
+            <Typography
+              sx={{
+                fontFamily: T.fontDisp,
+                fontWeight: 700,
+                fontSize: '0.8125rem',
+                letterSpacing: '0.04em',
+                color: T.t1,
+                lineHeight: 1.15,
+                whiteSpace: 'nowrap',
+              }}
+            >
+              OKU Hotels
+            </Typography>
+            <Typography
+              sx={{
+                fontFamily: T.fontDisp,
+                fontWeight: 500,
+                fontSize: '0.5625rem',
+                letterSpacing: '0.14em',
+                textTransform: 'uppercase',
+                color: T.t3,
+                lineHeight: 1,
+              }}
+            >
+              IT Portal · Ibiza
+            </Typography>
+          </Box>
+        )}
       </Box>
-    </Drawer>
-  );
-};
 
-export default Sidebar;
+      {/* ── Navigation ─────────────────────────────────────────── */}
+      <Box sx={{ flex: 1, py: 1.5, overflow: 'hidden' }}>
+        {open && (
+          <Typography
+            sx={{
+              fontFamily: T.fontDisp,
+              fontSize: '0.5625rem',
+              fontWeight: 600,
+              letterSpacing: '0.18em',
+              textTransform: 'uppercase',
+              color: T.t3,
+              px: 2,
+              mb: 0.75,
+              display: 'block',
+              mt: 0.5,
+            }}
+          >
+            Sistema
+          </Typography>
+        )}
+
+        {NAV.map(item => {
+          const Icon = item.icon;
+          return (
+            <Tooltip key={item.path} title={!open ? item.text : ''} placement="right" arrow
+              componentsProps={{
+                tooltip: {
+                  sx: {
+                    background: '#1A1A22',
+                    border: `1px solid ${T.borderStr}`,
+                    color: T.t1,
+                    fontFamily: T.fontUI,
+                    fontSize: '0.8125rem',
+                    borderRadius: '6px',
+                  },
+                },
+              }}
+            >
+              <Box component="span" sx={{ display: 'block', px: open ? 1.25 : 0, mx: open ? 0 : 'auto', width: open ? 'auto' : W_CLOSED }}>
+                <NavLink to={item.path} end={item.end} style={{ textDecoration: 'none', display: 'block' }}>
+                  {({ isActive }) => (
+                    <Box
+                      sx={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: 1.5,
+                        height: 36,
+                        px: open ? 1 : 0,
+                        justifyContent: open ? 'flex-start' : 'center',
+                        borderRadius: '6px',
+                        mb: 0.25,
+                        cursor: 'pointer',
+                        position: 'relative',
+                        transition: 'all 0.12s',
+                        background: isActive ? T.bgActive : 'transparent',
+                        borderLeft: isActive ? `2px solid ${T.accent}` : '2px solid transparent',
+                        '&:hover': {
+                          background: isActive ? T.bgActive : T.bgHover,
+                        },
+                      }}
+                    >
+                      <Icon
+                        sx={{
+                          fontSize: '1rem',
+                          flexShrink: 0,
+                          color: isActive ? T.accent : T.t3,
+                          transition: 'color 0.12s',
+                          ml: open ? 0 : '-1px',
+                        }}
+                      />
+                      {open && (
+                        <Typography
+                          sx={{
+                            fontFamily: T.fontUI,
+                            fontSize: '0.8125rem',
+                            fontWeight: isActive ? 500 : 400,
+                            color: isActive ? T.t1 : T.t2,
+                            whiteSpace: 'nowrap',
+                            letterSpacing: '0.01em',
+                            transition: 'color 0.12s',
+                          }}
+                        >
+                          {item.text}
+                        </Typography>
+                      )}
+                    </Box>
+                  )}
+                </NavLink>
+              </Box>
+            </Tooltip>
+          );
+        })}
+      </Box>
+
+      {/* ── Collapse toggle ────────────────────────────────────── */}
+      <Box
+        onClick={() => setOpen(o => !o)}
+        sx={{
+          height: 44,
+          borderTop: `1px solid ${T.border}`,
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: open ? 'flex-end' : 'center',
+          px: open ? 1.75 : 0,
+          cursor: 'pointer',
+          flexShrink: 0,
+          transition: 'all 0.12s',
+          '&:hover': { background: T.bgHover },
+          '&:hover .toggle-icon': { color: T.t2 },
+        }}
+      >
+        <Box
+          className="toggle-icon"
+          sx={{ color: T.t3, display: 'flex', alignItems: 'center', transition: 'color 0.12s' }}
+        >
+          {open
+            ? <KeyboardDoubleArrowLeftIcon sx={{ fontSize: '0.875rem' }} />
+            : <KeyboardDoubleArrowRightIcon sx={{ fontSize: '0.875rem' }} />
+          }
+        </Box>
+      </Box>
+    </Box>
+  );
+}

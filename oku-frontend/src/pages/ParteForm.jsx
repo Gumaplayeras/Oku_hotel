@@ -127,7 +127,6 @@ export default function ParteForm() {
   };
 
   const buildPayload = (estado = 'borrador') => ({
-    numero_parte: numParte === '…' || numParte === 'BORRADOR' ? '' : numParte,
     titulo: `Entrega a ${receptor.nombre || '?'} – ${tipoEntrega || 'Parte'}`,
     estado,
     prioridad: 'media',

@@ -1,4 +1,3 @@
-import { Box, Toolbar } from '@mui/material';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import Login from './pages/Login';
 import Dashboard from './pages/Dashboard';
@@ -9,7 +8,6 @@ import ParteForm from './pages/ParteForm';
 import PrivateRoute from './components/PrivateRoute';
 import MainLayout from './components/Layout/MainLayout';
 import Movimientos from './pages/Movimientos';
-import Sidebar from './components/Sidebar/Sidebar';
 import Redes from "./pages/Redes";
 import SwitchDetail from "./pages/SwitchDetail";
 import Profile from './pages/Profile';
@@ -90,18 +88,13 @@ function App() {
           }
         />
 
-        {/* Movimientos: usa layout especial con Sidebar */}
         <Route
           path="/movimientos"
           element={
             <PrivateRoute>
-              <Box sx={{ display: 'flex' }}>
-                <Sidebar />
-                <Box component="main" sx={{ flexGrow: 1, p: 3 }}>
-                  <Toolbar />
-                  <Movimientos />
-                </Box>
-              </Box>
+              <MainLayout>
+                <Movimientos />
+              </MainLayout>
             </PrivateRoute>
           }
         />
@@ -153,6 +146,8 @@ function App() {
             </PrivateRoute>
           }
         />
+
+        <Route path="/dashboard" element={<PrivateRoute><MainLayout><Dashboard /></MainLayout></PrivateRoute>} />
 
         {/* Catch-all */}
         <Route path="*" element={<Navigate to="/" replace />} />

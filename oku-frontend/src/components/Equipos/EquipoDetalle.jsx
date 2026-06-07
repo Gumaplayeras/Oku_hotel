@@ -8,12 +8,8 @@ import {
   IconButton,
   Box,
   CircularProgress,
-  Paper,
   TextField,
   Chip,
-  Card,
-  CardContent,
-  Avatar,
   Fade,
   Button
 } from '@mui/material';
@@ -28,130 +24,24 @@ import CalendarTodayIcon from '@mui/icons-material/CalendarToday';
 import InfoIcon from '@mui/icons-material/Info';
 import InventoryIcon from '@mui/icons-material/Inventory';
 import { getMovimientosPorEquipo } from '../../api/movimientos';
+import { T, inputSx } from '../../theme/theme';
 
-const StatCard = ({ title, value, icon, color, subtitle }) => {
-  return (
-    <Paper sx={{
-      p: 3, 
-      flex: '1 1 200px', 
-      minWidth: 200, 
-      height: '100%',
-      background: 'rgba(30, 41, 59, 0.6)',
-      border: '1px solid rgba(71, 85, 105, 0.3)',
-      borderRadius: '16px',
-      position: 'relative',
-      overflow: 'hidden',
-      backdropFilter: 'blur(20px)',
-      transition: 'all 0.4s cubic-bezier(0.4, 0, 0.2, 1)',
-      cursor: 'pointer',
-      '&:hover': {
-        transform: 'translateY(-4px) scale(1.02)',
-        background: 'rgba(30, 41, 59, 0.8)',
-        border: `1px solid ${color}40`,
-        boxShadow: `0 20px 40px -12px ${color}20`,
-        '& .stat-icon': {
-          transform: 'scale(1.1)',
-          backgroundColor: color,
-          color: '#ffffff',
-          boxShadow: `0 8px 20px ${color}40`
-        },
-        '& .stat-value': {
-          color: '#ffffff'
-        },
-        '& .stat-title': {
-          color: '#e2e8f0'
-        }
-      },
-      '&::before': {
-        content: '""',
-        position: 'absolute',
-        top: 0,
-        left: 0,
-        right: 0,
-        height: '2px',
-        background: `linear-gradient(90deg, ${color}, ${color}80, transparent)`,
-      },
-      '&::after': {
-        content: '""',
-        position: 'absolute',
-        top: -2,
-        right: -2,
-        width: '4px',
-        height: '40px',
-        background: `linear-gradient(180deg, ${color}60, transparent)`,
-        borderRadius: '2px'
-      }
-    }}>
-      <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-        <Box>
-          <Typography 
-            variant="caption" 
-            className="stat-title"
-            sx={{ 
-              color: '#94a3b8',
-              fontWeight: 500,
-              fontSize: '0.875rem',
-              mb: 1.5,
-              letterSpacing: '0.05em',
-              textTransform: 'uppercase',
-              transition: 'color 0.3s ease',
-              display: 'block'
-            }}
-          >
-            {title}
-          </Typography>
-          <Typography 
-            variant="h3" 
-            className="stat-value"
-            sx={{ 
-              color: '#f1f5f9',
-              fontWeight: 700,
-              fontSize: '2.25rem',
-              transition: 'color 0.3s ease',
-              fontFamily: '"Inter", sans-serif',
-              lineHeight: 1.1,
-              mb: 0.5
-            }}
-          >
-            {value}
-          </Typography>
-          <Typography 
-            variant="body2" 
-            sx={{ 
-              color: '#64748b',
-              fontSize: '0.8rem',
-              lineHeight: 1.4
-            }}
-          >
-            {subtitle}
-          </Typography>
-        </Box>
-        
-        <Box 
-          className="stat-icon"
-          sx={{
-            width: 60, 
-            height: 60, 
-            borderRadius: '14px', 
-            display: 'flex', 
-            alignItems: 'center',
-            justifyContent: 'center', 
-            backgroundColor: `${color}15`,
-            color: color,
-            border: `1px solid ${color}20`,
-            transition: 'all 0.4s cubic-bezier(0.4, 0, 0.2, 1)',
-            '& svg': {
-              fontSize: '1.75rem',
-              transition: 'all 0.3s ease'
-            }
-          }}
-        >
-          {icon}
-        </Box>
-      </Box>
-    </Paper>
-  );
-};
+const StatCard = ({ title, value, icon: Icon, color, subtitle }) => (
+  <Box sx={{
+    background: T.bgCard,
+    borderTop: `1px solid ${T.border}`, borderRight: `1px solid ${T.border}`,
+    borderBottom: `1px solid ${T.border}`, borderLeft: `2px solid ${color}`,
+    borderRadius: '1px 6px 6px 1px', p: '20px 22px',
+    '&:hover': { background: '#16161C' },
+  }}>
+    <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 1.75 }}>
+      <Typography sx={{ fontFamily: T.fontDisp, fontSize: '0.5625rem', fontWeight: 600, letterSpacing: '0.16em', textTransform: 'uppercase', color: T.t3 }}>{title}</Typography>
+      <Icon sx={{ fontSize: '0.875rem', color: T.t3, opacity: 0.7 }} />
+    </Box>
+    <Typography sx={{ fontFamily: T.fontMono, fontSize: '1.75rem', fontWeight: 500, color: T.t1, lineHeight: 1, letterSpacing: '-0.02em' }}>{value}</Typography>
+    <Typography sx={{ fontFamily: T.fontUI, fontSize: '0.6875rem', color: T.t3, mt: 0.75 }}>{subtitle}</Typography>
+  </Box>
+);
 
 const EquipoDetalle = ({ open, handleClose, equipo }) => {
   const [movimientos, setMovimientos] = useState([]);
@@ -159,7 +49,6 @@ const EquipoDetalle = ({ open, handleClose, equipo }) => {
   const [filtroTextoLibre, setFiltroTextoLibre] = useState('');
   const [filtroFecha, setFiltroFecha] = useState('');
 
-  // Memorizar la función de filtrado
   const movimientosFiltrados = React.useMemo(() => {
     return movimientos.filter((mov) => {
       const coincideFecha = filtroFecha
@@ -174,7 +63,6 @@ const EquipoDetalle = ({ open, handleClose, equipo }) => {
     });
   }, [movimientos, filtroFecha, filtroTextoLibre]);
 
-  // Función de cierre mejorada
   const handleDialogClose = useCallback((event, reason) => {
     if (reason === 'backdropClick' || reason === 'escapeKeyDown' || !reason) {
       setMovimientos([]);
@@ -185,12 +73,11 @@ const EquipoDetalle = ({ open, handleClose, equipo }) => {
     }
   }, [handleClose]);
 
-  // Cargar movimientos cuando se abre el modal
   useEffect(() => {
     if (open && equipo?.id_inventario) {
       console.log('🟡 Consultando movimientos para equipo:', equipo.id_inventario);
       setLoadingMovimientos(true);
-      
+
       getMovimientosPorEquipo(equipo.id_inventario.toString())
         .then((data) => {
           console.log('🟢 Movimientos recibidos:', data);
@@ -213,46 +100,28 @@ const EquipoDetalle = ({ open, handleClose, equipo }) => {
     }
   }, [open, equipo?.id_inventario]);
 
+  const getEstadoColor = (estado) => {
+    const colors = {
+      'Activo': T.green,
+      'Inactivo': T.red,
+      'Mantenimiento': T.yellow,
+      'Disponible': T.blue,
+    };
+    return colors[estado] || T.t3;
+  };
+
   if (!equipo || Object.keys(equipo).length === 0) {
     return (
-      <Dialog 
-        open={open} 
-        onClose={handleDialogClose}
-        maxWidth="lg" 
-        fullWidth
-        PaperProps={{
-          sx: {
-            borderRadius: '16px',
-            background: 'rgba(15, 23, 42, 0.95)',
-            backdropFilter: 'blur(20px)',
-            border: '1px solid rgba(71, 85, 105, 0.3)',
-            color: '#f1f5f9'
-          }
-        }}
-        BackdropProps={{
-          sx: {
-            backgroundColor: 'rgba(0, 0, 0, 0.8)'
-          }
-        }}
-      >
+      <Dialog open={open} onClose={handleDialogClose} maxWidth="lg" fullWidth
+        PaperProps={{ sx: { background: T.bgCard, border: `1px solid ${T.borderStr}`, borderRadius: '10px', color: T.t1, boxShadow: '0 24px 64px rgba(0,0,0,0.7)' } }}
+        BackdropProps={{ sx: { backgroundColor: 'rgba(0,0,0,0.65)' } }}>
         <DialogContent sx={{ p: 6, textAlign: 'center' }}>
-          <InfoIcon sx={{ fontSize: '4rem', color: '#64748b', mb: 2 }} />
-          <Typography variant="h6" sx={{ color: '#f1f5f9', fontWeight: 600 }}>
+          <InfoIcon sx={{ fontSize: '3.5rem', color: T.t3, mb: 2 }} />
+          <Typography sx={{ fontFamily: T.fontDisp, color: T.t1, fontWeight: 600, mb: 3 }}>
             No hay información del equipo disponible
           </Typography>
-          <Button 
-            onClick={handleDialogClose}
-            variant="outlined"
-            sx={{
-              mt: 3,
-              borderColor: 'rgba(71, 85, 105, 0.5)',
-              color: '#94a3b8',
-              '&:hover': {
-                borderColor: '#94a3b8',
-                background: 'rgba(71, 85, 105, 0.1)'
-              }
-            }}
-          >
+          <Button onClick={handleDialogClose} variant="outlined"
+            sx={{ border: `1px solid ${T.border}`, color: T.t2, borderRadius: '6px', textTransform: 'none', fontFamily: T.fontDisp, fontWeight: 500, fontSize: '0.75rem', '&:hover': { border: `1px solid ${T.borderStr}`, color: T.t1, background: T.bgHover } }}>
             Cerrar
           </Button>
         </DialogContent>
@@ -260,445 +129,138 @@ const EquipoDetalle = ({ open, handleClose, equipo }) => {
     );
   }
 
-  const getEstadoColor = (estado) => {
-    const colors = {
-      'Activo': '#22c55e',
-      'Inactivo': '#ef4444',
-      'Mantenimiento': '#f59e0b',
-      'Disponible': '#3b82f6',
-    };
-    return colors[estado] || '#64748b';
-  };
-
   return (
-    <Dialog 
-      open={open} 
-      onClose={handleDialogClose}
-      maxWidth="lg" 
-      fullWidth
-      PaperProps={{
-        sx: {
-          borderRadius: '16px',
-          background: 'rgba(15, 23, 42, 0.95)',
-          backdropFilter: 'blur(20px)',
-          border: '1px solid rgba(71, 85, 105, 0.3)',
-          maxHeight: '90vh',
-          color: '#f1f5f9'
-        }
-      }}
-      BackdropProps={{
-        sx: {
-          backgroundColor: 'rgba(0, 0, 0, 0.8)'
-        }
-      }}
-      keepMounted={false}
-    >
+    <Dialog open={open} onClose={handleDialogClose} maxWidth="lg" fullWidth
+      PaperProps={{ sx: { background: T.bgCard, border: `1px solid ${T.borderStr}`, borderRadius: '10px', color: T.t1, boxShadow: '0 24px 64px rgba(0,0,0,0.7)', maxHeight: '90vh' } }}
+      BackdropProps={{ sx: { backgroundColor: 'rgba(0,0,0,0.65)' } }}
+      keepMounted={false}>
       {/* Header */}
-      <DialogTitle sx={{ p: 4, pb: 2 }}>
+      <DialogTitle sx={{ p: 3, pb: 2 }}>
         <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 3 }}>
-            <Box sx={{
-              width: 56,
-              height: 56,
-              borderRadius: '14px',
-              background: 'linear-gradient(135deg, #f59e0b, #d97706)',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              boxShadow: '0 8px 20px rgba(245, 158, 11, 0.3)'
-            }}>
-              <ComputerIcon sx={{ color: '#ffffff', fontSize: '1.75rem' }} />
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+            <Box sx={{ width: 48, height: 48, borderRadius: '8px', background: T.accentDim, border: `1px solid ${T.accentBdr}`, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <ComputerIcon sx={{ color: T.accent, fontSize: '1.5rem' }} />
             </Box>
             <Box>
-              <Typography 
-                variant="h4" 
-                sx={{ 
-                  color: '#ffffff',
-                  fontWeight: 600,
-                  fontSize: '1.875rem',
-                  mb: 0.5,
-                  letterSpacing: '-0.025em'
-                }}
-              >
+              <Typography sx={{ fontFamily: T.fontDisp, color: T.t1, fontWeight: 700, fontSize: '1.25rem', mb: 0.25 }}>
                 {equipo.nombre || 'Equipo'}
               </Typography>
               <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                <InventoryIcon sx={{ color: '#94a3b8', fontSize: '1.1rem' }} />
-                <Typography 
-                  variant="subtitle1" 
-                  sx={{ 
-                    color: '#94a3b8',
-                    fontFamily: 'monospace',
-                    fontSize: '1rem'
-                  }}
-                >
+                <InventoryIcon sx={{ color: T.t3, fontSize: '0.9rem' }} />
+                <Typography sx={{ fontFamily: T.fontMono, color: T.t3, fontSize: '0.875rem' }}>
                   ID: {equipo.id_inventario}
                 </Typography>
               </Box>
             </Box>
           </Box>
-          
-          <IconButton
-            onClick={handleDialogClose}
-            sx={{ 
-              color: '#94a3b8',
-              backgroundColor: 'rgba(71, 85, 105, 0.3)',
-              border: '1px solid rgba(71, 85, 105, 0.3)',
-              borderRadius: '12px',
-              width: 48,
-              height: 48,
-              '&:hover': { 
-                backgroundColor: 'rgba(71, 85, 105, 0.5)',
-                borderColor: 'rgba(148, 163, 184, 0.5)',
-                color: '#f1f5f9'
-              }
-            }}
-          >
+
+          <IconButton onClick={handleDialogClose} sx={{ color: T.t3, background: 'rgba(255,255,255,0.04)', border: `1px solid ${T.border}`, borderRadius: '6px', width: 40, height: 40, '&:hover': { background: T.bgHover, color: T.t1 } }}>
             <CloseIcon />
           </IconButton>
         </Box>
       </DialogTitle>
-      
-      <DialogContent sx={{ p: 4, pt: 2 }}>
-        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
-          
-          {/* Estadísticas principales */}
-          <Box sx={{ 
-            display: 'grid',
-            gridTemplateColumns: {
-              xs: '1fr',
-              sm: 'repeat(2, 1fr)',
-              lg: 'repeat(3, 1fr)'
-            },
-            gap: 3
-          }}>
-            <StatCard
-              title="Empleado Asignado"
-              value={equipo.empleado?.nombre ? "Asignado" : "Libre"}
-              icon={<PersonIcon />}
-              color={equipo.empleado?.nombre ? "#22c55e" : "#64748b"}
-              subtitle={equipo.empleado?.nombre || "Sin asignar"}
-            />
-            <StatCard
-              title="Ubicación"
-              value={equipo.ubicacion?.fase || "N/A"}
-              icon={<LocationOnIcon />}
-              color="#3b82f6"
-              subtitle="Fase actual"
-            />
-            <StatCard
-              title="Estado"
-              value={equipo.estado?.nombre || "N/A"}
-              icon={<BusinessIcon />}
-              color={getEstadoColor(equipo.estado?.nombre)}
-              subtitle="Estado actual"
-            />
+
+      <DialogContent sx={{ p: 3, pt: 1 }}>
+        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+
+          {/* Stats */}
+          <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: 'repeat(2, 1fr)', lg: 'repeat(3, 1fr)' }, gap: 2 }}>
+            <StatCard title="Empleado Asignado" value={equipo.empleado?.nombre ? "Asignado" : "Libre"} icon={PersonIcon} color={equipo.empleado?.nombre ? T.green : T.t3} subtitle={equipo.empleado?.nombre || "Sin asignar"} />
+            <StatCard title="Ubicación" value={equipo.ubicacion?.fase || "N/A"} icon={LocationOnIcon} color={T.blue} subtitle="Fase actual" />
+            <StatCard title="Estado" value={equipo.estado?.nombre || "N/A"} icon={BusinessIcon} color={getEstadoColor(equipo.estado?.nombre)} subtitle="Estado actual" />
           </Box>
 
-          {/* Información técnica */}
-          <Paper sx={{
-            p: 3,
-            background: 'rgba(30, 41, 59, 0.6)',
-            border: '1px solid rgba(71, 85, 105, 0.3)',
-            borderRadius: '16px',
-            backdropFilter: 'blur(20px)'
-          }}>
-            <Typography 
-              variant="h6" 
-              sx={{ 
-                color: '#f1f5f9', 
-                mb: 3, 
-                fontWeight: 600,
-                display: 'flex',
-                alignItems: 'center',
-                gap: 1
-              }}
-            >
-              <ComputerIcon sx={{ color: '#f59e0b' }} />
-              Especificaciones Técnicas
-            </Typography>
-            
-            <Grid container spacing={3}>
-              <Grid item xs={12} sm={6}>
-                <Box sx={{ mb: 3 }}>
-                  <Typography variant="caption" sx={{ 
-                    color: '#94a3b8',
-                    fontWeight: 500,
-                    fontSize: '0.875rem',
-                    letterSpacing: '0.05em',
-                    textTransform: 'uppercase',
-                    display: 'block',
-                    mb: 1
-                  }}>
-                    Elemento
-                  </Typography>
-                  <Typography variant="h6" sx={{ 
-                    color: '#f1f5f9',
-                    fontWeight: 600
-                  }}>
-                    {equipo.elemento || 'No especificado'}
-                  </Typography>
-                </Box>
-                
-                <Box sx={{ mb: 3 }}>
-                  <Typography variant="caption" sx={{ 
-                    color: '#94a3b8',
-                    fontWeight: 500,
-                    fontSize: '0.875rem',
-                    letterSpacing: '0.05em',
-                    textTransform: 'uppercase',
-                    display: 'block',
-                    mb: 1
-                  }}>
-                    Marca
-                  </Typography>
-                  <Typography variant="h6" sx={{ 
-                    color: '#f1f5f9',
-                    fontWeight: 600
-                  }}>
-                    {equipo.marca || 'No especificado'}
-                  </Typography>
-                </Box>
+          {/* Technical info */}
+          <Box sx={{ p: 2.5, background: '#0E0E13', border: `1px solid ${T.border}`, borderRadius: '6px' }}>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, mb: 2.5 }}>
+              <ComputerIcon sx={{ color: T.accent, fontSize: '0.9rem' }} />
+              <Typography sx={{ fontFamily: T.fontDisp, fontSize: '0.5625rem', fontWeight: 600, letterSpacing: '0.14em', textTransform: 'uppercase', color: T.t3 }}>
+                Especificaciones Técnicas
+              </Typography>
+            </Box>
 
-                <Box>
-                  <Typography variant="caption" sx={{ 
-                    color: '#94a3b8',
-                    fontWeight: 500,
-                    fontSize: '0.875rem',
-                    letterSpacing: '0.05em',
-                    textTransform: 'uppercase',
-                    display: 'block',
-                    mb: 1
-                  }}>
-                    Departamento
-                  </Typography>
-                  <Typography variant="h6" sx={{ 
-                    color: '#f1f5f9',
-                    fontWeight: 600
-                  }}>
-                    {equipo.departamento?.nombre || 'No especificado'}
-                  </Typography>
-                </Box>
+            <Grid container spacing={2.5}>
+              <Grid item xs={12} sm={6}>
+                {[['Elemento', equipo.elemento], ['Marca', equipo.marca], ['Departamento', equipo.departamento?.nombre]].map(([label, val]) => (
+                  <Box key={label} sx={{ mb: 2.5 }}>
+                    <Typography sx={{ fontFamily: T.fontDisp, fontSize: '0.5625rem', fontWeight: 600, letterSpacing: '0.14em', textTransform: 'uppercase', color: T.t3, mb: 0.5 }}>{label}</Typography>
+                    <Typography sx={{ fontFamily: T.fontUI, color: T.t1, fontWeight: 600 }}>{val || 'No especificado'}</Typography>
+                  </Box>
+                ))}
               </Grid>
-
               <Grid item xs={12} sm={6}>
-                <Box sx={{ mb: 3 }}>
-                  <Typography variant="caption" sx={{ 
-                    color: '#94a3b8',
-                    fontWeight: 500,
-                    fontSize: '0.875rem',
-                    letterSpacing: '0.05em',
-                    textTransform: 'uppercase',
-                    display: 'block',
-                    mb: 1
-                  }}>
-                    Modelo
-                  </Typography>
-                  <Typography variant="h6" sx={{ 
-                    color: '#f1f5f9',
-                    fontWeight: 600
-                  }}>
-                    {equipo.modelo || 'No especificado'}
-                  </Typography>
+                <Box sx={{ mb: 2.5 }}>
+                  <Typography sx={{ fontFamily: T.fontDisp, fontSize: '0.5625rem', fontWeight: 600, letterSpacing: '0.14em', textTransform: 'uppercase', color: T.t3, mb: 0.5 }}>Modelo</Typography>
+                  <Typography sx={{ fontFamily: T.fontUI, color: T.t1, fontWeight: 600 }}>{equipo.modelo || 'No especificado'}</Typography>
                 </Box>
-                
                 <Box>
-                  <Typography variant="caption" sx={{ 
-                    color: '#94a3b8',
-                    fontWeight: 500,
-                    fontSize: '0.875rem',
-                    letterSpacing: '0.05em',
-                    textTransform: 'uppercase',
-                    display: 'block',
-                    mb: 1
-                  }}>
-                    Serial
-                  </Typography>
-                  <Box sx={{
-                    backgroundColor: 'rgba(51, 65, 85, 0.5)',
-                    border: '1px solid rgba(71, 85, 105, 0.3)',
-                    borderRadius: '8px',
-                    p: 2
-                  }}>
-                    <Typography variant="h6" sx={{ 
-                      color: '#f1f5f9',
-                      fontFamily: 'monospace',
-                      fontWeight: 600,
-                      fontSize: '1rem'
-                    }}>
-                      {equipo.serial || 'No especificado'}
-                    </Typography>
+                  <Typography sx={{ fontFamily: T.fontDisp, fontSize: '0.5625rem', fontWeight: 600, letterSpacing: '0.14em', textTransform: 'uppercase', color: T.t3, mb: 0.5 }}>Serial</Typography>
+                  <Box sx={{ background: 'rgba(255,255,255,0.03)', border: `1px solid ${T.border}`, borderRadius: '6px', p: 1.5 }}>
+                    <Typography sx={{ fontFamily: T.fontMono, color: T.t1, fontWeight: 500, fontSize: '0.95rem' }}>{equipo.serial || 'No especificado'}</Typography>
                   </Box>
                 </Box>
               </Grid>
             </Grid>
-          </Paper>
+          </Box>
 
-          {/* Historial de movimientos */}
-          <Paper sx={{
-            p: 3,
-            background: 'rgba(30, 41, 59, 0.6)',
-            border: '1px solid rgba(71, 85, 105, 0.3)',
-            borderRadius: '16px',
-            backdropFilter: 'blur(20px)'
-          }}>
-            <Typography 
-              variant="h6" 
-              sx={{ 
-                color: '#f1f5f9', 
-                mb: 3, 
-                fontWeight: 600,
-                display: 'flex',
-                alignItems: 'center',
-                gap: 1
-              }}
-            >
-              <HistoryIcon sx={{ color: '#f59e0b' }} />
-              Historial de Movimientos
-            </Typography>
+          {/* Movement history */}
+          <Box sx={{ p: 2.5, background: '#0E0E13', border: `1px solid ${T.border}`, borderRadius: '6px' }}>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, mb: 2.5 }}>
+              <HistoryIcon sx={{ color: T.accent, fontSize: '0.9rem' }} />
+              <Typography sx={{ fontFamily: T.fontDisp, fontSize: '0.5625rem', fontWeight: 600, letterSpacing: '0.14em', textTransform: 'uppercase', color: T.t3 }}>
+                Historial de Movimientos
+              </Typography>
+            </Box>
 
-            {/* Filtros */}
-            <Grid container spacing={3} sx={{ mb: 3 }}>
+            <Grid container spacing={2} sx={{ mb: 2.5 }}>
               <Grid item xs={12} md={6}>
-                <TextField
-                  fullWidth
-                  label="Buscar en movimientos"
-                  variant="outlined"
-                  value={filtroTextoLibre}
-                  onChange={(e) => setFiltroTextoLibre(e.target.value)}
-                  InputProps={{
-                    startAdornment: <SearchIcon sx={{ color: '#94a3b8', mr: 1 }} />
-                  }}
-                  sx={{
-                    '& .MuiOutlinedInput-root': {
-                      backgroundColor: 'rgba(51, 65, 85, 0.3)',
-                      borderRadius: '12px',
-                      '& fieldset': {
-                        borderColor: 'rgba(71, 85, 105, 0.3)',
-                      },
-                      '&:hover fieldset': {
-                        borderColor: 'rgba(96, 165, 250, 0.5)',
-                      },
-                      '&.Mui-focused fieldset': {
-                        borderColor: '#60a5fa',
-                      },
-                    },
-                    '& .MuiInputLabel-root': {
-                      color: '#94a3b8',
-                    },
-                    '& .MuiOutlinedInput-input': {
-                      color: '#f1f5f9',
-                    }
-                  }}
-                />
+                <TextField fullWidth label="Buscar en movimientos" variant="outlined" value={filtroTextoLibre} onChange={(e) => setFiltroTextoLibre(e.target.value)}
+                  InputProps={{ startAdornment: <SearchIcon sx={{ color: T.t3, mr: 1 }} /> }} sx={inputSx} />
               </Grid>
-              
               <Grid item xs={12} md={6}>
-                <TextField
-                  fullWidth
-                  label="Filtrar por fecha"
-                  type="date"
-                  value={filtroFecha}
-                  onChange={(e) => setFiltroFecha(e.target.value)}
-                  InputLabelProps={{ shrink: true }}
-                  sx={{
-                    '& .MuiOutlinedInput-root': {
-                      backgroundColor: 'rgba(51, 65, 85, 0.3)',
-                      borderRadius: '12px',
-                      '& fieldset': {
-                        borderColor: 'rgba(71, 85, 105, 0.3)',
-                      },
-                      '&:hover fieldset': {
-                        borderColor: 'rgba(96, 165, 250, 0.5)',
-                      },
-                      '&.Mui-focused fieldset': {
-                        borderColor: '#60a5fa',
-                      },
-                    },
-                    '& .MuiInputLabel-root': {
-                      color: '#94a3b8',
-                    },
-                    '& .MuiOutlinedInput-input': {
-                      color: '#f1f5f9',
-                    }
-                  }}
-                />
+                <TextField fullWidth label="Filtrar por fecha" type="date" value={filtroFecha} onChange={(e) => setFiltroFecha(e.target.value)} InputLabelProps={{ shrink: true }} sx={inputSx} />
               </Grid>
             </Grid>
 
-            {/* Lista de movimientos */}
             {loadingMovimientos ? (
-              <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', py: 6 }}>
+              <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', py: 5 }}>
                 <Box sx={{ textAlign: 'center' }}>
-                  <CircularProgress size={48} sx={{ color: '#f59e0b', mb: 2 }} />
-                  <Typography variant="body1" sx={{ color: '#94a3b8' }}>
-                    Cargando movimientos...
-                  </Typography>
+                  <CircularProgress size={36} sx={{ color: T.accent, mb: 2 }} />
+                  <Typography sx={{ fontFamily: T.fontUI, color: T.t3, fontSize: '0.875rem' }}>Cargando movimientos...</Typography>
                 </Box>
               </Box>
             ) : movimientosFiltrados.length > 0 ? (
               <Box sx={{ maxHeight: '400px', overflowY: 'auto' }}>
                 {movimientosFiltrados.map((mov, idx) => (
                   <Fade in={true} timeout={300 + idx * 100} key={mov.uniqueId || idx}>
-                    <Paper 
-                      sx={{ 
-                        mb: 2, 
-                        p: 3,
-                        background: 'rgba(51, 65, 85, 0.3)',
-                        border: '1px solid rgba(71, 85, 105, 0.3)',
-                        borderRadius: '12px',
-                        backdropFilter: 'blur(20px)',
-                        transition: 'all 0.3s ease',
-                        '&:hover': {
-                          transform: 'translateY(-2px)',
-                          background: 'rgba(51, 65, 85, 0.5)',
-                          borderColor: 'rgba(96, 165, 250, 0.5)',
-                          boxShadow: '0 8px 25px rgba(0, 0, 0, 0.3)'
-                        }
-                      }}
-                    >
-                      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 2 }}>
+                    <Box sx={{ mb: 1.5, p: 2, background: 'rgba(255,255,255,0.02)', border: `1px solid ${T.border}`, borderRadius: '6px', '&:hover': { background: T.bgHover, borderColor: T.borderStr } }}>
+                      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 1.5 }}>
                         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                          <CalendarTodayIcon sx={{ fontSize: '1rem', color: '#94a3b8' }} />
-                          <Typography variant="body2" sx={{ color: '#cbd5e1', fontWeight: 600 }}>
+                          <CalendarTodayIcon sx={{ fontSize: '0.875rem', color: T.t3 }} />
+                          <Typography sx={{ fontFamily: T.fontUI, color: T.t2, fontWeight: 600, fontSize: '0.875rem' }}>
                             {new Date(mov.fecha).toLocaleString()}
                           </Typography>
                         </Box>
-                        
-                        <Chip
-                          label={mov.descripcion || mov.motivo || 'Sin motivo'}
-                          size="small"
-                          sx={{ 
-                            backgroundColor: 'rgba(245, 158, 11, 0.2)',
-                            color: '#fbbf24',
-                            border: '1px solid rgba(245, 158, 11, 0.3)',
-                            fontWeight: 500
-                          }}
-                        />
+                        <Chip label={mov.descripcion || mov.motivo || 'Sin motivo'} size="small" sx={{ background: T.accentDim, color: T.accent, border: `1px solid ${T.accentBdr}`, fontFamily: T.fontDisp, fontSize: '0.5625rem', fontWeight: 600, letterSpacing: '0.1em', textTransform: 'uppercase', height: 20, borderRadius: '4px' }} />
                       </Box>
-                      
                       <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                        <PersonIcon sx={{ fontSize: '1rem', color: '#94a3b8' }} />
-                        <Typography variant="body2" sx={{ color: '#e2e8f0' }}>
-                          <strong>Realizado por:</strong> {mov.realizado_por_nombre || mov.realizado_por || 'Usuario no especificado'}
+                        <PersonIcon sx={{ fontSize: '0.875rem', color: T.t3 }} />
+                        <Typography sx={{ fontFamily: T.fontUI, color: T.t2, fontSize: '0.875rem' }}>
+                          <strong style={{ color: T.t1 }}>Realizado por:</strong> {mov.realizado_por_nombre || mov.realizado_por || 'Usuario no especificado'}
                         </Typography>
                       </Box>
-                    </Paper>
+                    </Box>
                   </Fade>
                 ))}
               </Box>
             ) : (
-              <Box sx={{ textAlign: 'center', py: 6 }}>
-                <HistoryIcon sx={{ fontSize: '4rem', color: '#64748b', mb: 2 }} />
-                <Typography variant="h6" sx={{ color: '#94a3b8', mb: 1, fontWeight: 600 }}>
-                  No hay movimientos
-                </Typography>
-                <Typography variant="body2" sx={{ color: '#64748b' }}>
-                  No se encontraron movimientos que coincidan con los filtros aplicados
-                </Typography>
+              <Box sx={{ textAlign: 'center', py: 5 }}>
+                <HistoryIcon sx={{ fontSize: '3rem', color: T.t3, opacity: 0.3, mb: 2 }} />
+                <Typography sx={{ fontFamily: T.fontDisp, color: T.t2, fontWeight: 600, mb: 0.5 }}>No hay movimientos</Typography>
+                <Typography sx={{ fontFamily: T.fontUI, color: T.t3, fontSize: '0.875rem' }}>No se encontraron movimientos que coincidan con los filtros aplicados</Typography>
               </Box>
             )}
-          </Paper>
+          </Box>
         </Box>
       </DialogContent>
     </Dialog>

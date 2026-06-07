@@ -1,404 +1,342 @@
-import React, { useEffect, useState } from 'react';
-import { Box, Typography, Paper, CircularProgress } from '@mui/material';
-import { 
-  Devices as DevicesIcon,
-  SimCard as SimCardIcon,
-  People as PeopleIcon,
-  Assignment as AssignmentIcon
-} from '@mui/icons-material';
-import { getTotalEquipos, getTotalSims, getTotalEmpleados, getTotalIncidencias } from '../api/dashboard';
+import React, { useEffect, useState, useCallback } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { Box, Typography, Grid, CircularProgress, Chip } from '@mui/material';
+import DevicesOutlinedIcon      from '@mui/icons-material/DevicesOutlined';
+import PeopleOutlinedIcon       from '@mui/icons-material/PeopleOutlined';
+import DescriptionOutlinedIcon  from '@mui/icons-material/DescriptionOutlined';
+import AccountTreeOutlinedIcon  from '@mui/icons-material/AccountTreeOutlined';
+import ArrowForwardIcon         from '@mui/icons-material/ArrowForward';
+import WifiOutlinedIcon         from '@mui/icons-material/WifiOutlined';
+import WifiOffOutlinedIcon      from '@mui/icons-material/WifiOffOutlined';
+import MemoryOutlinedIcon       from '@mui/icons-material/MemoryOutlined';
+import RouterOutlinedIcon       from '@mui/icons-material/RouterOutlined';
+import RefreshOutlinedIcon      from '@mui/icons-material/RefreshOutlined';
+import { getTotalEquipos, getTotalEmpleados } from '../api/dashboard';
+import { getPartes } from '../api/partes';
+import { getSummary } from '../api/recolectorApi';
 import CountUp from 'react-countup';
+import { T } from '../theme/theme';
 
+// ── Helpers ────────────────────────────────────────────────────────────────────
+const ESTADO_META = {
+  borrador:   { label: 'Borrador',   color: T.t3 },
+  pendiente:  { label: 'Pendiente',  color: T.yellow },
+  en_proceso: { label: 'En proceso', color: T.blue },
+  resuelto:   { label: 'Resuelto',   color: T.green },
+  cancelado:  { label: 'Cancelado',  color: T.red },
+};
+
+const estadoChip = val => {
+  const m = ESTADO_META[val] || { label: val || '—', color: T.t3 };
+  const bgMap = { [T.green]: 'rgba(74,222,128,0.1)', [T.red]: 'rgba(248,113,113,0.1)', [T.blue]: 'rgba(96,165,250,0.1)', [T.yellow]: 'rgba(251,191,36,0.1)' };
+  const bMap  = { [T.green]: 'rgba(74,222,128,0.2)', [T.red]: 'rgba(248,113,113,0.2)', [T.blue]: 'rgba(96,165,250,0.2)', [T.yellow]: 'rgba(251,191,36,0.2)' };
+  return (
+    <Chip label={m.label} size="small" sx={{
+      background: bgMap[m.color] || 'rgba(255,255,255,0.05)',
+      color: m.color,
+      border: `1px solid ${bMap[m.color] || T.border}`,
+      fontFamily: T.fontDisp, fontSize: '0.5rem', fontWeight: 700,
+      letterSpacing: '0.1em', textTransform: 'uppercase',
+      height: 18, borderRadius: '3px',
+    }} />
+  );
+};
+
+// ── Stat card (left-border design) ────────────────────────────────────────────
+const StatCard = ({ label, value, icon: Icon, color, sub, loading }) => (
+  <Box sx={{
+    background: T.bgCard,
+    borderTop: `1px solid ${T.border}`, borderRight: `1px solid ${T.border}`,
+    borderBottom: `1px solid ${T.border}`, borderLeft: `2px solid ${color}`,
+    borderRadius: '1px 6px 6px 1px', p: '20px 22px',
+    transition: 'background 0.15s',
+    '&:hover': { background: '#16161C' },
+  }}>
+    <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 2 }}>
+      <Typography sx={{ fontFamily: T.fontDisp, fontSize: '0.5625rem', fontWeight: 600, letterSpacing: '0.16em', textTransform: 'uppercase', color: T.t3 }}>
+        {label}
+      </Typography>
+      <Icon sx={{ fontSize: '0.875rem', color: T.t3, opacity: 0.6 }} />
+    </Box>
+    {loading ? (
+      <Box sx={{ height: 40, display: 'flex', alignItems: 'center' }}>
+        <CircularProgress size={18} sx={{ color }} />
+      </Box>
+    ) : (
+      <Typography sx={{ fontFamily: T.fontMono, fontSize: '2.25rem', fontWeight: 500, color: T.t1, lineHeight: 1, letterSpacing: '-0.02em' }}>
+        {value !== null ? <CountUp end={value || 0} duration={1.4} separator="." /> : '—'}
+      </Typography>
+    )}
+    <Typography sx={{ fontFamily: T.fontUI, fontSize: '0.6875rem', color: T.t3, mt: 0.75, letterSpacing: '0.01em' }}>
+      {sub}
+    </Typography>
+  </Box>
+);
+
+// ── Section panel ──────────────────────────────────────────────────────────────
+const PanelHead = ({ label, action, onAction }) => (
+  <Box sx={{ px: 2.5, py: 1.5, borderBottom: `1px solid ${T.border}`, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+    <Typography sx={{ fontFamily: T.fontDisp, fontSize: '0.5625rem', fontWeight: 600, letterSpacing: '0.16em', textTransform: 'uppercase', color: T.t3 }}>
+      {label}
+    </Typography>
+    {action && (
+      <Box onClick={onAction} sx={{ display: 'flex', alignItems: 'center', gap: 0.5, cursor: 'pointer', color: T.t3, transition: 'color 0.12s', '&:hover': { color: T.accent } }}>
+        <Typography sx={{ fontFamily: T.fontDisp, fontSize: '0.5625rem', fontWeight: 600, letterSpacing: '0.12em', textTransform: 'uppercase' }}>{action}</Typography>
+        <ArrowForwardIcon sx={{ fontSize: '0.625rem' }} />
+      </Box>
+    )}
+  </Box>
+);
+
+// ── Dashboard ──────────────────────────────────────────────────────────────────
 const Dashboard = () => {
-  const [data, setData] = useState({
-    equipos: null,
-    sims: null,
-    empleados: null,
-    incidencias: null,
-    error: null
-  });
+  const navigate = useNavigate();
+  const [time, setTime]           = useState(new Date());
+  const [equipos, setEquipos]     = useState(null);
+  const [empleados, setEmpleados] = useState(null);
+  const [partesPend, setPartesPend] = useState(null);
+  const [partesRecent, setPartesRecent] = useState([]);
+  const [network, setNetwork]     = useState(null);
+  const [netError, setNetError]   = useState(false);
+  const [loading, setLoading]     = useState(true);
 
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const [equiposTotal, simsTotal, empleadosTotal, incidenciasTotal] = await Promise.all([
-          getTotalEquipos(), 
-          getTotalSims(), 
-          getTotalEmpleados(), 
-          getTotalIncidencias()
-        ]);
-        
-        setData({
-          equipos: equiposTotal,
-          sims: simsTotal,
-          empleados: empleadosTotal,
-          incidencias: incidenciasTotal,
-          error: null
-        });
-      } catch (error) { 
-        console.error('Error cargando datos del dashboard:', error);
-        setData(prev => ({ ...prev, error: 'Error al cargar los datos' }));
-      }
-    };
-    
-    fetchData();
+  const fetchData = useCallback(async () => {
+    setLoading(true);
+    // Core data — always available
+    try {
+      const [eq, em] = await Promise.all([getTotalEquipos(), getTotalEmpleados()]);
+      setEquipos(eq); setEmpleados(em);
+    } catch {}
+    // Partes — available
+    try {
+      const res = await getPartes();
+      const list = Array.isArray(res.data || res) ? (res.data || res) : (res.data?.results ?? res?.results ?? []);
+      const active = list.filter(p => p.estado === 'pendiente' || p.estado === 'en_proceso').length;
+      setPartesPend(active);
+      // last 6 partes sorted by date
+      const sorted = [...list].sort((a, b) => new Date(b.fecha_apertura || 0) - new Date(a.fecha_apertura || 0));
+      setPartesRecent(sorted.slice(0, 6));
+    } catch {}
+    // Network — may be unavailable (separate service)
+    try {
+      const summary = await getSummary();
+      setNetwork(summary);
+      setNetError(false);
+    } catch {
+      setNetError(true);
+    }
+    setLoading(false);
   }, []);
 
-  const cardConfigs = [
-    {
-      title: 'Total Equipos',
-      value: data.equipos,
-      icon: <DevicesIcon />,
-      color: '#2563eb',
-      lightColor: '#eff6ff',
-      darkColor: '#1e40af'
-    },
-    {
-      title: 'Total SIMs',
-      value: data.sims,
-      icon: <SimCardIcon />,
-      color: '#0891b2',
-      lightColor: '#ecfeff',
-      darkColor: '#0e7490'
-    },
-    {
-      title: 'Incidencias',
-      value: data.incidencias,
-      icon: <AssignmentIcon />,
-      color: '#dc2626',
-      lightColor: '#fef2f2',
-      darkColor: '#b91c1c'
-    },
-    {
-      title: 'Empleados',
-      value: data.empleados,
-      icon: <PeopleIcon />,
-      color: '#16a34a',
-      lightColor: '#f0fdf4',
-      darkColor: '#15803d'
-    }
-  ];
+  useEffect(() => {
+    fetchData();
+    const tick = setInterval(() => setTime(new Date()), 1000);
+    return () => clearInterval(tick);
+  }, [fetchData]);
 
-  const renderCard = (config) => (
-    <Paper 
-      elevation={0} 
-      sx={{ 
-        p: 3, 
-        height: '100%',
-        background: 'rgba(30, 41, 59, 0.6)',
-        border: '1px solid rgba(71, 85, 105, 0.3)',
-        borderRadius: '16px',
-        position: 'relative',
-        overflow: 'hidden',
-        backdropFilter: 'blur(20px)',
-        transition: 'all 0.4s cubic-bezier(0.4, 0, 0.2, 1)',
-        cursor: 'pointer',
-        '&:hover': {
-          transform: 'translateY(-4px) scale(1.02)',
-          background: 'rgba(30, 41, 59, 0.8)',
-          border: `1px solid ${config.color}40`,
-          boxShadow: `0 20px 40px -12px ${config.color}20`,
-          '& .card-icon': {
-            transform: 'scale(1.1)',
-            backgroundColor: config.color,
-            color: '#ffffff',
-            boxShadow: `0 8px 20px ${config.color}40`
-          },
-          '& .card-number': {
-            color: '#ffffff'
-          },
-          '& .card-title': {
-            color: '#e2e8f0'
-          }
-        },
-        '&::before': {
-          content: '""',
-          position: 'absolute',
-          top: 0,
-          left: 0,
-          right: 0,
-          height: '2px',
-          background: `linear-gradient(90deg, ${config.color}, ${config.color}80, transparent)`,
-        },
-        '&::after': {
-          content: '""',
-          position: 'absolute',
-          top: -2,
-          right: -2,
-          width: '4px',
-          height: '40px',
-          background: `linear-gradient(180deg, ${config.color}60, transparent)`,
-          borderRadius: '2px'
-        }
-      }}
-    >
-      <Box sx={{ 
-        display: 'flex', 
-        alignItems: 'center', 
-        justifyContent: 'space-between',
-        position: 'relative',
-        zIndex: 2
-      }}>
-        <Box>
-          <Typography 
-            variant="body2" 
-            className="card-title"
-            sx={{ 
-              color: '#94a3b8',
-              fontWeight: 500,
-              fontSize: '0.875rem',
-              mb: 1.5,
-              letterSpacing: '0.05em',
-              textTransform: 'uppercase',
-              transition: 'color 0.3s ease'
-            }}
-          >
-            {config.title}
-          </Typography>
-          {config.value === null ? (
-            <CircularProgress 
-              size={28} 
-              sx={{ 
-                color: config.color,
-                mt: 1
-              }} 
-            />
-          ) : (
-            <Typography 
-              variant="h3" 
-              className="card-number"
-              sx={{ 
-                color: '#f1f5f9',
-                fontWeight: 700,
-                fontSize: { xs: '1.875rem', sm: '2.25rem' },
-                transition: 'color 0.3s ease',
-                fontFamily: '"Inter", sans-serif',
-                lineHeight: 1.1
-              }}
-            >
-              <CountUp end={config.value || 0} duration={2.5} separator="." />
-            </Typography>
-          )}
-        </Box>
-        
-        <Box 
-          className="card-icon"
-          sx={{
-            width: 60, 
-            height: 60, 
-            borderRadius: '14px', 
-            display: 'flex', 
-            alignItems: 'center',
-            justifyContent: 'center', 
-            backgroundColor: `${config.color}15`,
-            color: config.color,
-            border: `1px solid ${config.color}20`,
-            transition: 'all 0.4s cubic-bezier(0.4, 0, 0.2, 1)',
-            position: 'relative',
-            '& svg': {
-              fontSize: '1.75rem',
-              transition: 'all 0.3s ease'
-            },
-            '&::before': {
-              content: '""',
-              position: 'absolute',
-              inset: 0,
-              borderRadius: '14px',
-              background: `conic-gradient(from 0deg, ${config.color}00, ${config.color}30, ${config.color}00)`,
-              opacity: 0,
-              transition: 'opacity 0.3s ease'
-            }
-          }}
-        >
-          {config.icon}
-        </Box>
-      </Box>
-    </Paper>
-  );
+  const switchesOnline = network?.reachable ?? null;
+  const switchesTotal  = network?.total_switches ?? null;
+  const switchesDown   = network !== null ? (switchesTotal - switchesOnline) : null;
 
   return (
-    <Box sx={{ 
-      p: { xs: 2, sm: 3 },
-      minHeight: '100vh'
-    }}>
-      {/* Header Section */}
-      <Box sx={{ mb: 4 }}>
-        <Typography 
-          variant="h3" 
-          sx={{ 
-            color: '#ffffff',
-            fontWeight: 600,
-            fontSize: { xs: '1.875rem', sm: '2.25rem', md: '2.5rem' },
-            mb: 1,
-            letterSpacing: '-0.025em'
-          }}
-        >
-          Dashboard IT
-        </Typography>
-        <Typography 
-          variant="body1" 
-          sx={{ 
-            color: '#cbd5e1',
-            fontSize: '1rem',
-            fontWeight: 400,
-            mb: 3
-          }}
-        >
-          Gestión y monitoreo de recursos tecnológicos
-        </Typography>
-        
-        {/* Subtle decorative element */}
-        <Box sx={{
-          width: '80px',
-          height: '2px',
-          background: 'linear-gradient(90deg, rgba(255,255,255,0.6), transparent)',
-          borderRadius: '1px',
-          opacity: 0.7
-        }} />
-      </Box>
-      
-      {/* Error Message */}
-      {data.error && (
-        <Paper sx={{
-          p: 3,
-          mb: 3,
-          background: 'rgba(220, 38, 38, 0.1)',
-          border: '1px solid rgba(220, 38, 38, 0.3)',
-          borderRadius: '12px',
-          borderLeft: '4px solid #dc2626',
-          backdropFilter: 'blur(10px)'
-        }}>
-          <Typography sx={{ color: '#fca5a5', fontWeight: 500 }}>
-            {data.error}
+    <Box>
+      {/* ── Page header ──────────────────────────────────────────── */}
+      <Box sx={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', mb: 3.5, flexWrap: 'wrap', gap: 2 }}>
+        <Box>
+          <Typography sx={{ fontFamily: T.fontDisp, fontWeight: 800, fontSize: '1.25rem', letterSpacing: '-0.01em', color: T.t1, mb: 0.5 }}>
+            Dashboard
           </Typography>
-        </Paper>
-      )}
-      
-      {/* Stats Grid */}
-      <Box sx={{ 
-        display: 'grid',
-        gridTemplateColumns: {
-          xs: '1fr',
-          sm: 'repeat(2, 1fr)',
-          lg: 'repeat(4, 1fr)'
-        },
-        gap: { xs: 2, sm: 3 },
-        mb: 4
-      }}>
-        {cardConfigs.map((config, index) => (
-          <Box key={index}>
-            {renderCard(config)}
-          </Box>
-        ))}
-      </Box>
-
-      {/* Additional Info Section */}
-      <Box sx={{
-        display: 'grid',
-        gridTemplateColumns: { xs: '1fr', md: '2fr 1fr' },
-        gap: 3,
-        mt: 4
-      }}>
-        <Paper sx={{
-          p: 4,
-          background: 'rgba(30, 41, 59, 0.4)',
-          border: '1px solid rgba(71, 85, 105, 0.3)',
-          borderRadius: '16px',
-          backdropFilter: 'blur(20px)',
-          position: 'relative',
-          overflow: 'hidden',
-          '&::before': {
-            content: '""',
-            position: 'absolute',
-            top: 0,
-            left: 0,
-            width: '100%',
-            height: '1px',
-            background: 'linear-gradient(90deg, transparent, rgba(34, 197, 94, 0.6), transparent)'
-          }
-        }}>
-          <Box sx={{ display: 'flex', alignItems: 'center', mb: 3 }}>
-            <Box sx={{
-              width: 10,
-              height: 10,
-              borderRadius: '50%',
-              backgroundColor: '#22c55e',
-              mr: 2,
-              boxShadow: '0 0 10px rgba(34, 197, 94, 0.4)',
-              position: 'relative',
-              '&::after': {
-                content: '""',
-                position: 'absolute',
-                inset: 0,
-                borderRadius: '50%',
-                backgroundColor: '#22c55e',
-                animation: 'pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite',
-                opacity: 0.7
-              },
-              '@keyframes pulse': {
-                '0%, 100%': {
-                  transform: 'scale(1)',
-                  opacity: 1
-                },
-                '50%': {
-                  transform: 'scale(1.5)',
-                  opacity: 0
-                }
-              }
-            }} />
-            <Typography variant="h6" sx={{ color: '#f1f5f9', fontWeight: 600, fontSize: '1.1rem' }}>
-              Estado del Sistema
+          <Typography sx={{ fontFamily: T.fontUI, fontSize: '0.8125rem', color: T.t3, letterSpacing: '0.01em' }}>
+            OKU Hotels · IT Ibiza
+          </Typography>
+        </Box>
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+          {/* Live clock */}
+          <Box sx={{ background: T.bgCard, border: `1px solid ${T.border}`, borderRadius: '6px', px: 1.75, py: 0.75, display: 'flex', alignItems: 'center', gap: 1 }}>
+            <Box sx={{ width: 6, height: 6, borderRadius: '50%', background: T.green, boxShadow: `0 0 0 2.5px rgba(74,222,128,0.18)` }} />
+            <Typography sx={{ fontFamily: T.fontMono, fontSize: '0.6875rem', color: T.t2, letterSpacing: '0.04em' }}>
+              {time.toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit', second: '2-digit' })}
             </Typography>
           </Box>
-          <Typography variant="body2" sx={{ color: '#cbd5e1', lineHeight: 1.7, fontSize: '0.95rem' }}>
-            Todos los sistemas funcionando correctamente. La plataforma de gestión IT está operativa 
-            y monitoreando activamente todos los recursos asignados.
-          </Typography>
-        </Paper>
-
-        <Paper sx={{
-          p: 4,
-          background: 'rgba(30, 41, 59, 0.4)',
-          border: '1px solid rgba(71, 85, 105, 0.3)',
-          borderRadius: '16px',
-          backdropFilter: 'blur(20px)',
-          position: 'relative',
-          overflow: 'hidden',
-          '&::before': {
-            content: '""',
-            position: 'absolute',
-            top: 0,
-            left: 0,
-            width: '100%',
-            height: '1px',
-            background: 'linear-gradient(90deg, transparent, rgba(59, 130, 246, 0.6), transparent)'
-          }
-        }}>
-          <Typography variant="h6" sx={{ color: '#f1f5f9', mb: 2, fontWeight: 600, fontSize: '1.1rem' }}>
-            Última Actualización
-          </Typography>
-          <Typography variant="body1" sx={{ color: '#e2e8f0', fontWeight: 500, mb: 1 }}>
-            {new Date().toLocaleDateString('es-ES', {
-              weekday: 'long',
-              year: 'numeric',
-              month: 'long',
-              day: 'numeric'
-            })}
-          </Typography>
-          <Typography variant="body2" sx={{ 
-            color: '#94a3b8', 
-            fontSize: '0.9rem',
-            fontFamily: 'monospace',
-            letterSpacing: '0.05em'
-          }}>
-            {new Date().toLocaleTimeString('es-ES', {
-              hour: '2-digit',
-              minute: '2-digit',
-              second: '2-digit'
-            })}
-          </Typography>
-        </Paper>
+          {/* Refresh */}
+          <Box onClick={fetchData} sx={{ background: T.bgCard, border: `1px solid ${T.border}`, borderRadius: '6px', px: 1.25, py: 0.75, cursor: 'pointer', display: 'flex', alignItems: 'center', color: T.t3, transition: 'all 0.12s', '&:hover': { border: `1px solid ${T.borderStr}`, color: T.t2, background: '#16161C' } }}>
+            <RefreshOutlinedIcon sx={{ fontSize: '0.875rem' }} />
+          </Box>
+        </Box>
       </Box>
+
+      {/* ── Stat cards ────────────────────────────────────────────── */}
+      <Grid container spacing={2} sx={{ mb: 2.5 }}>
+        <Grid item xs={12} sm={6} lg={3}>
+          <StatCard label="Equipos" value={equipos} icon={DevicesOutlinedIcon} color={T.accent} sub="Inventario activo" loading={loading && equipos === null} />
+        </Grid>
+        <Grid item xs={12} sm={6} lg={3}>
+          <StatCard label="Empleados" value={empleados} icon={PeopleOutlinedIcon} color={T.green} sub="Personal registrado" loading={loading && empleados === null} />
+        </Grid>
+        <Grid item xs={12} sm={6} lg={3}>
+          <StatCard label="Partes activos" value={partesPend} icon={DescriptionOutlinedIcon} color={T.yellow} sub="Pendientes y en proceso" loading={loading && partesPend === null} />
+        </Grid>
+        <Grid item xs={12} sm={6} lg={3}>
+          <StatCard
+            label="Switches online"
+            value={switchesOnline}
+            icon={AccountTreeOutlinedIcon}
+            color={switchesDown > 0 ? T.yellow : T.blue}
+            sub={switchesTotal !== null ? `de ${switchesTotal} en inventario` : 'Sin datos de red'}
+            loading={loading && network === null && !netError}
+          />
+        </Grid>
+      </Grid>
+
+      {/* ── Bottom panels ─────────────────────────────────────────── */}
+      <Grid container spacing={2}>
+
+        {/* Network panel */}
+        <Grid item xs={12} md={5}>
+          <Box sx={{ background: T.bgCard, border: `1px solid ${T.border}`, borderRadius: '6px', height: '100%' }}>
+            <PanelHead label="Red · Infraestructura" action="Ver switches" onAction={() => navigate('/redes')} />
+
+            {netError ? (
+              <Box sx={{ px: 2.5, py: 3, textAlign: 'center' }}>
+                <WifiOffOutlinedIcon sx={{ fontSize: '1.75rem', color: T.t3, mb: 1 }} />
+                <Typography sx={{ fontFamily: T.fontDisp, fontSize: '0.75rem', fontWeight: 600, color: T.t3, letterSpacing: '0.06em', textTransform: 'uppercase' }}>
+                  Servicio no disponible
+                </Typography>
+                <Typography sx={{ fontFamily: T.fontUI, fontSize: '0.75rem', color: T.t3, mt: 0.5 }}>
+                  El recolector de red no responde
+                </Typography>
+              </Box>
+            ) : network === null ? (
+              <Box sx={{ px: 2.5, py: 3, display: 'flex', alignItems: 'center', gap: 1.5 }}>
+                <CircularProgress size={14} sx={{ color: T.t3 }} />
+                <Typography sx={{ fontFamily: T.fontUI, fontSize: '0.8125rem', color: T.t3 }}>Cargando datos de red…</Typography>
+              </Box>
+            ) : (
+              <>
+                {/* Online / Offline big numbers */}
+                <Box sx={{ display: 'flex', borderBottom: `1px solid ${T.border}` }}>
+                  <Box sx={{ flex: 1, px: 2.5, py: 2, borderRight: `1px solid ${T.border}` }}>
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}>
+                      <WifiOutlinedIcon sx={{ fontSize: '0.875rem', color: T.green }} />
+                      <Typography sx={{ fontFamily: T.fontDisp, fontSize: '0.5625rem', fontWeight: 600, letterSpacing: '0.14em', textTransform: 'uppercase', color: T.t3 }}>Online</Typography>
+                    </Box>
+                    <Typography sx={{ fontFamily: T.fontMono, fontSize: '2rem', fontWeight: 500, color: T.green, lineHeight: 1, letterSpacing: '-0.02em' }}>
+                      {network.reachable}
+                    </Typography>
+                    <Typography sx={{ fontFamily: T.fontUI, fontSize: '0.6875rem', color: T.t3, mt: 0.5 }}>respondiendo</Typography>
+                  </Box>
+                  <Box sx={{ flex: 1, px: 2.5, py: 2 }}>
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}>
+                      <WifiOffOutlinedIcon sx={{ fontSize: '0.875rem', color: network.inaccessible > 0 ? T.red : T.t3 }} />
+                      <Typography sx={{ fontFamily: T.fontDisp, fontSize: '0.5625rem', fontWeight: 600, letterSpacing: '0.14em', textTransform: 'uppercase', color: T.t3 }}>Caídos</Typography>
+                    </Box>
+                    <Typography sx={{ fontFamily: T.fontMono, fontSize: '2rem', fontWeight: 500, color: network.inaccessible > 0 ? T.red : T.t3, lineHeight: 1, letterSpacing: '-0.02em' }}>
+                      {network.inaccessible}
+                    </Typography>
+                    <Typography sx={{ fontFamily: T.fontUI, fontSize: '0.6875rem', color: T.t3, mt: 0.5 }}>
+                      {network.inaccessible > 0 ? 'requieren atención' : 'sin incidencias'}
+                    </Typography>
+                  </Box>
+                </Box>
+
+                {/* Detail metrics */}
+                {[
+                  ['Fabricantes', `${network.vendors?.Aruba || 0} Aruba · ${network.vendors?.Ruckus || 0} Ruckus`, RouterOutlinedIcon, T.t2],
+                  ['Dispositivos conectados', (network.total_macs || 0).toLocaleString('es-ES'), MemoryOutlinedIcon, T.t2],
+                  ['Vecinos LLDP detectados', (network.total_neighbors || 0).toLocaleString('es-ES'), AccountTreeOutlinedIcon, T.t2],
+                ].map(([label, value, Icon, valueColor]) => (
+                  <Box key={label} sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', px: 2.5, py: 1.125, borderBottom: `1px solid rgba(255,255,255,0.03)` }}>
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                      <Icon sx={{ fontSize: '0.8rem', color: T.t3 }} />
+                      <Typography sx={{ fontFamily: T.fontUI, fontSize: '0.8125rem', color: T.t3, letterSpacing: '0.01em' }}>{label}</Typography>
+                    </Box>
+                    <Typography sx={{ fontFamily: T.fontMono, fontSize: '0.8125rem', color: valueColor, fontWeight: 500 }}>{value}</Typography>
+                  </Box>
+                ))}
+              </>
+            )}
+          </Box>
+        </Grid>
+
+        {/* Partes recientes */}
+        <Grid item xs={12} md={7}>
+          <Box sx={{ background: T.bgCard, border: `1px solid ${T.border}`, borderRadius: '6px', height: '100%' }}>
+            <PanelHead label="Partes · Actividad reciente" action="Ver todos" onAction={() => navigate('/partes')} />
+
+            {loading && partesRecent.length === 0 ? (
+              <Box sx={{ px: 2.5, py: 3, display: 'flex', alignItems: 'center', gap: 1.5 }}>
+                <CircularProgress size={14} sx={{ color: T.t3 }} />
+                <Typography sx={{ fontFamily: T.fontUI, fontSize: '0.8125rem', color: T.t3 }}>Cargando partes…</Typography>
+              </Box>
+            ) : partesRecent.length === 0 ? (
+              <Box sx={{ px: 2.5, py: 3, textAlign: 'center' }}>
+                <DescriptionOutlinedIcon sx={{ fontSize: '1.75rem', color: T.t3, mb: 1 }} />
+                <Typography sx={{ fontFamily: T.fontDisp, fontSize: '0.75rem', fontWeight: 600, color: T.t3, letterSpacing: '0.06em', textTransform: 'uppercase' }}>Sin partes</Typography>
+                <Typography sx={{ fontFamily: T.fontUI, fontSize: '0.75rem', color: T.t3, mt: 0.5 }}>No hay partes registrados aún</Typography>
+              </Box>
+            ) : (
+              <>
+                {/* Column headers */}
+                <Box sx={{ display: 'flex', alignItems: 'center', px: 2.5, py: 1, borderBottom: `1px solid ${T.border}`, gap: 2 }}>
+                  {[['Nº Parte', '120px'], ['Receptor', '1'], ['Tipo', '120px'], ['Estado', '90px'], ['Fecha', '80px']].map(([h, w]) => (
+                    <Typography key={h} sx={{ fontFamily: T.fontDisp, fontSize: '0.5rem', fontWeight: 600, letterSpacing: '0.14em', textTransform: 'uppercase', color: T.t3, width: w === '1' ? undefined : w, flex: w === '1' ? 1 : undefined, flexShrink: 0 }}>
+                      {h}
+                    </Typography>
+                  ))}
+                </Box>
+
+                {/* Rows */}
+                {partesRecent.map((p, i) => (
+                  <Box
+                    key={p.id}
+                    onClick={() => navigate(`/partes/${p.id}`)}
+                    sx={{
+                      display: 'flex', alignItems: 'center', px: 2.5, py: 1.25, gap: 2,
+                      borderBottom: i < partesRecent.length - 1 ? `1px solid rgba(255,255,255,0.03)` : 'none',
+                      cursor: 'pointer',
+                      transition: 'background 0.1s',
+                      '&:hover': { background: T.bgHover },
+                    }}
+                  >
+                    {/* Nº Parte */}
+                    <Typography sx={{ fontFamily: T.fontMono, fontSize: '0.75rem', color: T.accent, fontWeight: 500, width: '120px', flexShrink: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                      {p.numero_parte || `#${p.id}`}
+                    </Typography>
+                    {/* Receptor */}
+                    <Box sx={{ flex: 1, minWidth: 0 }}>
+                      <Typography sx={{ fontFamily: T.fontUI, fontSize: '0.8125rem', color: T.t1, fontWeight: 500, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                        {p.receptor_nombre || p.solicitante || '—'}
+                      </Typography>
+                      {p.receptor_departamento && (
+                        <Typography sx={{ fontFamily: T.fontUI, fontSize: '0.6875rem', color: T.t3, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                          {p.receptor_departamento}
+                        </Typography>
+                      )}
+                    </Box>
+                    {/* Tipo */}
+                    <Box sx={{ width: '120px', flexShrink: 0 }}>
+                      {p.tipo_entrega ? (
+                        <Chip label={p.tipo_entrega} size="small" sx={{ background: T.accentDim, color: T.accent, border: `1px solid ${T.accentBdr}`, fontFamily: T.fontDisp, fontSize: '0.5rem', fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase', height: 18, borderRadius: '3px', maxWidth: '115px' }} />
+                      ) : (
+                        <Typography sx={{ fontFamily: T.fontUI, color: T.t3, fontSize: '0.8rem' }}>—</Typography>
+                      )}
+                    </Box>
+                    {/* Estado */}
+                    <Box sx={{ width: '90px', flexShrink: 0 }}>
+                      {estadoChip(p.estado)}
+                    </Box>
+                    {/* Fecha */}
+                    <Typography sx={{ fontFamily: T.fontMono, fontSize: '0.75rem', color: T.t3, width: '80px', flexShrink: 0 }}>
+                      {p.fecha_apertura ? new Date(p.fecha_apertura).toLocaleDateString('es-ES', { day: '2-digit', month: '2-digit' }) : '—'}
+                    </Typography>
+                  </Box>
+                ))}
+              </>
+            )}
+          </Box>
+        </Grid>
+
+      </Grid>
     </Box>
   );
 };

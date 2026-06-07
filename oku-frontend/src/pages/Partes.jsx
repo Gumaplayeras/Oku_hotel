@@ -1,464 +1,176 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import {
-  Typography, Paper, TextField, Button, Grid,
-  CircularProgress, LinearProgress, Fade, Box, MenuItem, Chip, IconButton
-} from '@mui/material';
-import {
-  Description as DescriptionIcon,
-  Search as SearchIcon,
-  Add as AddIcon,
-  CheckCircle as CheckCircleIcon,
-  HourglassEmpty as PendingIcon,
-  Build as BuildIcon,
-  Cancel as CancelIcon,
-  DeleteOutline
-} from '@mui/icons-material';
+import { Typography, TextField, Button, Grid, CircularProgress, LinearProgress, Box, MenuItem, Chip, IconButton } from '@mui/material';
+import SearchIcon from '@mui/icons-material/Search';
+import AddIcon from '@mui/icons-material/Add';
+import ArrowForwardIcon from '@mui/icons-material/ArrowForward';
+import DescriptionOutlinedIcon from '@mui/icons-material/DescriptionOutlined';
+import CheckCircleOutlineIcon from '@mui/icons-material/CheckCircleOutline';
+import HourglassEmptyIcon from '@mui/icons-material/HourglassEmpty';
+import BuildOutlinedIcon from '@mui/icons-material/BuildOutlined';
+import DeleteOutlineIcon from '@mui/icons-material/DeleteOutline';
 import { DataGrid } from '@mui/x-data-grid';
 import { getPartes, deleteParte } from '../api/partes';
+import { T, inputSx, menuPaperSx, dgSx } from '../theme/theme';
 
-const ESTADOS_PARTE = [
-  { value: 'borrador',   label: 'Borrador',    color: '#94a3b8' },
-  { value: 'pendiente',  label: 'Pendiente',   color: '#f59e0b' },
-  { value: 'en_proceso', label: 'En proceso',  color: '#3b82f6' },
-  { value: 'resuelto',   label: 'Resuelto',    color: '#22c55e' },
-  { value: 'cancelado',  label: 'Cancelado',   color: '#ef4444' },
+const ESTADOS = [
+  { value: 'borrador',   label: 'Borrador',   color: T.t3 },
+  { value: 'pendiente',  label: 'Pendiente',  color: T.yellow },
+  { value: 'en_proceso', label: 'En proceso', color: T.blue },
+  { value: 'resuelto',   label: 'Resuelto',   color: T.green },
+  { value: 'cancelado',  label: 'Cancelado',  color: T.red },
 ];
 
-const StatCard = ({ title, value, icon, color, subtitle }) => (
-  <Paper sx={{
-    p: 3,
-    height: '100%',
-    background: 'rgba(30, 41, 59, 0.6)',
-    border: '1px solid rgba(71, 85, 105, 0.3)',
-    borderRadius: '16px',
-    position: 'relative',
-    overflow: 'hidden',
-    backdropFilter: 'blur(20px)',
-    transition: 'all 0.4s cubic-bezier(0.4, 0, 0.2, 1)',
-    cursor: 'pointer',
-    '&:hover': {
-      transform: 'translateY(-4px) scale(1.02)',
-      background: 'rgba(30, 41, 59, 0.8)',
-      border: `1px solid ${color}40`,
-      boxShadow: `0 20px 40px -12px ${color}20`,
-      '& .stat-icon': {
-        transform: 'scale(1.1)',
-        backgroundColor: color,
-        color: '#ffffff',
-        boxShadow: `0 8px 20px ${color}40`,
-      },
-      '& .stat-value': { color: '#ffffff' },
-      '& .stat-title': { color: '#e2e8f0' },
-    },
-    '&::before': {
-      content: '""',
-      position: 'absolute',
-      top: 0, left: 0, right: 0,
-      height: '2px',
-      background: `linear-gradient(90deg, ${color}, ${color}80, transparent)`,
-    },
+const StatCard = ({ title, value, icon: Icon, color, subtitle }) => (
+  <Box sx={{
+    background: T.bgCard,
+    borderTop: `1px solid ${T.border}`, borderRight: `1px solid ${T.border}`,
+    borderBottom: `1px solid ${T.border}`, borderLeft: `2px solid ${color}`,
+    borderRadius: '1px 6px 6px 1px', p: '20px 22px',
+    '&:hover': { background: '#16161C' },
   }}>
-    <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-      <Box>
-        <Typography variant="caption" className="stat-title" sx={{
-          color: '#94a3b8', fontWeight: 500, fontSize: '0.875rem', mb: 1.5,
-          letterSpacing: '0.05em', textTransform: 'uppercase', transition: 'color 0.3s ease', display: 'block'
-        }}>
-          {title}
-        </Typography>
-        <Typography variant="h3" className="stat-value" sx={{
-          color: '#f1f5f9', fontWeight: 700, fontSize: '2.25rem',
-          transition: 'color 0.3s ease', fontFamily: '"Inter", sans-serif', lineHeight: 1.1, mb: 0.5
-        }}>
-          {value}
-        </Typography>
-        <Typography variant="body2" sx={{ color: '#64748b', fontSize: '0.8rem', lineHeight: 1.4 }}>
-          {subtitle}
-        </Typography>
-      </Box>
-      <Box className="stat-icon" sx={{
-        width: 60, height: 60, borderRadius: '14px', display: 'flex', alignItems: 'center',
-        justifyContent: 'center', backgroundColor: `${color}15`, color: color,
-        border: `1px solid ${color}20`, transition: 'all 0.4s cubic-bezier(0.4, 0, 0.2, 1)',
-        '& svg': { fontSize: '1.75rem', transition: 'all 0.3s ease' }
-      }}>
-        {icon}
-      </Box>
+    <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 1.75 }}>
+      <Typography sx={{ fontFamily: T.fontDisp, fontSize: '0.5625rem', fontWeight: 600, letterSpacing: '0.16em', textTransform: 'uppercase', color: T.t3 }}>{title}</Typography>
+      <Icon sx={{ fontSize: '0.875rem', color: T.t3, opacity: 0.7 }} />
     </Box>
-  </Paper>
+    <Typography sx={{ fontFamily: T.fontMono, fontSize: '2.25rem', fontWeight: 500, color: T.t1, lineHeight: 1, letterSpacing: '-0.02em' }}>{value}</Typography>
+    <Typography sx={{ fontFamily: T.fontUI, fontSize: '0.6875rem', color: T.t3, mt: 0.75 }}>{subtitle}</Typography>
+  </Box>
 );
 
-const estadoChip = (estado) => {
-  const found = ESTADOS_PARTE.find(e => e.value === estado);
-  const label = found?.label || estado || '—';
-  const color = found?.color || '#94a3b8';
-  return (
-    <Chip
-      label={label}
-      size="small"
-      sx={{
-        backgroundColor: `${color}20`,
-        color: color,
-        border: `1px solid ${color}40`,
-        fontWeight: 600,
-        fontSize: '0.78rem',
-      }}
-    />
-  );
-};
-
-const inputSx = {
-  '& .MuiOutlinedInput-root': {
-    backgroundColor: 'rgba(51, 65, 85, 0.3)',
-    borderRadius: '12px',
-    '& fieldset': { borderColor: 'rgba(71, 85, 105, 0.3)' },
-    '&:hover fieldset': { borderColor: 'rgba(96, 165, 250, 0.5)' },
-    '&.Mui-focused fieldset': { borderColor: '#60a5fa' },
-  },
-  '& .MuiInputLabel-root': { color: '#94a3b8' },
-  '& .MuiOutlinedInput-input': { color: '#f1f5f9' },
+const estadoChip = val => {
+  const e = ESTADOS.find(x => x.value === val);
+  const label = e?.label || val || '—';
+  const color = e?.color || T.t3;
+  const getBg = c => {
+    if (c === T.green) return 'rgba(74,222,128,0.1)';
+    if (c === T.red) return 'rgba(248,113,113,0.1)';
+    if (c === T.blue) return 'rgba(96,165,250,0.1)';
+    if (c === T.yellow) return 'rgba(251,191,36,0.1)';
+    return 'rgba(255,255,255,0.05)';
+  };
+  const getBdr = c => {
+    if (c === T.green) return 'rgba(74,222,128,0.2)';
+    if (c === T.red) return 'rgba(248,113,113,0.2)';
+    if (c === T.blue) return 'rgba(96,165,250,0.2)';
+    if (c === T.yellow) return 'rgba(251,191,36,0.2)';
+    return T.border;
+  };
+  return <Chip label={label} size="small" sx={{ background: getBg(color), color, border: `1px solid ${getBdr(color)}`, fontFamily: T.fontDisp, fontSize: '0.5625rem', fontWeight: 600, letterSpacing: '0.1em', textTransform: 'uppercase', height: 20, borderRadius: '4px' }} />;
 };
 
 const Partes = () => {
   const navigate = useNavigate();
-  const [partes, setPartes] = useState([]);
-  const [filtered, setFiltered] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const [partes, setPartes]       = useState([]);
+  const [filtered, setFiltered]   = useState([]);
+  const [loading, setLoading]     = useState(true);
   const [searching, setSearching] = useState(false);
-  const [search, setSearch] = useState('');
+  const [search, setSearch]       = useState('');
   const [filtroEstado, setFiltroEstado] = useState('');
 
   useEffect(() => {
-    const fetchPartes = async () => {
+    (async () => {
       try {
         const res = await getPartes();
-        const resData = res.data || res;
-        const list = Array.isArray(resData) ? resData : resData?.results ?? [];
-        setPartes(list);
-        setFiltered(list);
-      } catch (err) {
-        console.error('Error cargando partes:', err);
-        setPartes([]);
-        setFiltered([]);
-      } finally {
-        setLoading(false);
-      }
-    };
-    fetchPartes();
+        const list = Array.isArray(res.data || res) ? (res.data || res) : (res.data?.results ?? res?.results ?? []);
+        setPartes(list); setFiltered(list);
+      } catch {} finally { setLoading(false); }
+    })();
   }, []);
 
   const handleBuscar = async () => {
-    setSearching(true);
-    await new Promise(r => setTimeout(r, 250));
-    const result = partes.filter(p => {
-      const matchText = search === '' ||
-        p.titulo?.toLowerCase().includes(search.toLowerCase()) ||
-        p.descripcion?.toLowerCase().includes(search.toLowerCase()) ||
-        p.solicitante?.toLowerCase().includes(search.toLowerCase());
-      const matchEstado = filtroEstado === '' || p.estado === filtroEstado;
-      return matchText && matchEstado;
-    });
-    setFiltered(result);
+    setSearching(true); await new Promise(r => setTimeout(r, 200));
+    setFiltered(partes.filter(p => {
+      const m = !search || p.titulo?.toLowerCase().includes(search.toLowerCase()) || p.solicitante?.toLowerCase().includes(search.toLowerCase());
+      return m && (!filtroEstado || p.estado === filtroEstado);
+    }));
     setSearching(false);
   };
 
-  const handleClear = () => {
-    setSearch('');
-    setFiltroEstado('');
-    setFiltered(partes);
+  const handleDelete = async id => {
+    try { await deleteParte(id); setPartes(p => p.filter(x => x.id !== id)); setFiltered(f => f.filter(x => x.id !== id)); } catch {}
   };
-
-  const handleDelete = async (id) => {
-    try {
-      await deleteParte(id);
-      setPartes(prev => prev.filter(p => p.id !== id));
-      setFiltered(prev => prev.filter(p => p.id !== id));
-    } catch (e) {
-      console.error("Error eliminando parte:", e);
-    }
-  };
-
-  const total = partes.length;
-  const pendientes = partes.filter(p => p.estado === 'pendiente').length;
-  const enProceso = partes.filter(p => p.estado === 'en_proceso').length;
-  const resueltos = partes.filter(p => p.estado === 'resuelto').length;
 
   const columns = [
-    {
-      field: 'numero_parte',
-      headerName: 'Nº Parte',
-      width: 160,
-      renderCell: (params) => (
-        <Typography sx={{ fontWeight: 700, color: '#d4a574', fontFamily: 'monospace', fontSize: '0.8rem' }}>
-          {params.value || `#${params.row.id}`}
-        </Typography>
-      ),
-    },
-    {
-      field: 'emisor_nombre',
-      headerName: 'Emisor',
-      flex: 1,
-      minWidth: 130,
-      renderCell: (params) => (
-        <Box>
-          <Typography sx={{ fontWeight: 600, color: '#f1f5f9', fontSize: '0.85rem' }}>
-            {params.value || params.row.solicitante || '—'}
-          </Typography>
-          {params.row.emisor_rol && (
-            <Typography sx={{ color: '#64748b', fontSize: '0.72rem' }}>{params.row.emisor_rol}</Typography>
-          )}
-        </Box>
-      ),
-    },
-    {
-      field: 'receptor_nombre',
-      headerName: 'Receptor',
-      flex: 1,
-      minWidth: 130,
-      renderCell: (params) => (
-        <Box>
-          <Typography sx={{ fontWeight: 600, color: '#cbd5e1', fontSize: '0.85rem' }}>
-            {params.value || '—'}
-          </Typography>
-          {params.row.receptor_departamento && (
-            <Typography sx={{ color: '#64748b', fontSize: '0.72rem' }}>{params.row.receptor_departamento}</Typography>
-          )}
-        </Box>
-      ),
-    },
-    {
-      field: 'tipo_entrega',
-      headerName: 'Tipo',
-      flex: 1,
-      minWidth: 130,
-      renderCell: (params) => params.value ? (
-        <Chip label={params.value} size="small" sx={{
-          backgroundColor: 'rgba(212,165,116,0.12)', color: '#d4a574',
-          border: '1px solid rgba(212,165,116,0.3)', fontWeight: 600, fontSize: '0.72rem'
-        }} />
-      ) : <Typography sx={{ color: '#475569', fontSize: '0.82rem' }}>—</Typography>,
-    },
-    {
-      field: 'estado',
-      headerName: 'Estado',
-      flex: 1,
-      minWidth: 120,
-      renderCell: (params) => estadoChip(params.value),
-    },
-    {
-      field: 'fecha_apertura',
-      headerName: 'Fecha',
-      flex: 1,
-      minWidth: 110,
-      renderCell: (params) => (
-        <Typography sx={{ color: '#94a3b8', fontFamily: 'monospace', fontSize: '0.82rem' }}>
-          {params.value ? new Date(params.value).toLocaleDateString('es-ES') : '—'}
-        </Typography>
-      ),
-    },
-    {
-      field: 'acciones',
-      headerName: '',
-      width: 60,
-      sortable: false,
-      renderCell: (params) => (
-        <IconButton 
-          size="small" 
-          onClick={(e) => {
-            e.stopPropagation();
-            if (window.confirm("¿Seguro que deseas eliminar este parte?")) {
-               handleDelete(params.row.id);
-            }
-          }}
-          sx={{ color: '#ef4444', '&:hover': { background: 'rgba(239, 68, 68, 0.1)' } }}
-        >
-          <DeleteOutline fontSize="small" />
-        </IconButton>
-      ),
-    },
+    { field: 'numero_parte', headerName: 'Nº Parte', width: 150,
+      renderCell: p => <Typography sx={{ fontFamily: T.fontMono, fontWeight: 500, color: T.accent, fontSize: '0.8125rem' }}>{p.value || `#${p.row.id}`}</Typography> },
+    { field: 'emisor_nombre', headerName: 'Emisor', flex: 1, minWidth: 130,
+      renderCell: p => <Box><Typography sx={{ fontFamily: T.fontUI, fontWeight: 600, color: T.t1, fontSize: '0.875rem' }}>{p.value || p.row.solicitante || '—'}</Typography>{p.row.emisor_rol && <Typography sx={{ fontFamily: T.fontUI, color: T.t3, fontSize: '0.72rem' }}>{p.row.emisor_rol}</Typography>}</Box> },
+    { field: 'receptor_nombre', headerName: 'Receptor', flex: 1, minWidth: 130,
+      renderCell: p => <Box><Typography sx={{ fontFamily: T.fontUI, fontWeight: 500, color: T.t2, fontSize: '0.875rem' }}>{p.value || '—'}</Typography>{p.row.receptor_departamento && <Typography sx={{ fontFamily: T.fontUI, color: T.t3, fontSize: '0.72rem' }}>{p.row.receptor_departamento}</Typography>}</Box> },
+    { field: 'tipo_entrega', headerName: 'Tipo', flex: 1, minWidth: 130,
+      renderCell: p => p.value ? <Chip label={p.value} size="small" sx={{ background: T.accentDim, color: T.accent, border: `1px solid ${T.accentBdr}`, fontFamily: T.fontDisp, fontSize: '0.5625rem', fontWeight: 600, letterSpacing: '0.1em', textTransform: 'uppercase', height: 20, borderRadius: '4px' }} /> : <Typography sx={{ fontFamily: T.fontUI, color: T.t3, fontSize: '0.8rem' }}>—</Typography> },
+    { field: 'estado', headerName: 'Estado', flex: 1, minWidth: 120, renderCell: p => estadoChip(p.value) },
+    { field: 'fecha_apertura', headerName: 'Fecha', flex: 1, minWidth: 100,
+      renderCell: p => <Typography sx={{ fontFamily: T.fontMono, color: T.t3, fontSize: '0.8rem' }}>{p.value ? new Date(p.value).toLocaleDateString('es-ES') : '—'}</Typography> },
+    { field: '_del', headerName: '', width: 48, sortable: false,
+      renderCell: p => <IconButton size="small" onClick={e => { e.stopPropagation(); if (window.confirm('¿Eliminar?')) handleDelete(p.row.id); }} sx={{ color: 'rgba(248,113,113,0.4)', '&:hover': { background: 'rgba(248,113,113,0.08)', color: T.red } }}><DeleteOutlineIcon sx={{ fontSize: '1rem' }} /></IconButton> },
   ];
 
-
   return (
-    <Box sx={{ p: { xs: 2, sm: 3 }, minHeight: '100vh' }}>
-      {/* Header */}
-      <Box sx={{ mb: 4 }}>
-        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 3, mb: 3, flexWrap: 'wrap' }}>
-          <Box>
-            <Typography variant="h3" sx={{
-              color: '#ffffff', fontWeight: 600, fontSize: { xs: '1.875rem', sm: '2.25rem' },
-              mb: 1, letterSpacing: '-0.025em', display: 'flex', alignItems: 'center', gap: 2
-            }}>
-              <Box sx={{
-                width: 48, height: 48, borderRadius: '12px',
-                background: 'linear-gradient(135deg, #6366f1, #4f46e5)',
-                display: 'flex', alignItems: 'center', justifyContent: 'center',
-                boxShadow: '0 8px 20px rgba(99, 102, 241, 0.3)'
-              }}>
-                <DescriptionIcon sx={{ color: '#ffffff', fontSize: '1.5rem' }} />
-              </Box>
-              Partes de Trabajo
-            </Typography>
-            <Typography variant="body1" sx={{ color: '#cbd5e1', fontSize: '1rem', fontWeight: 400, mb: 2 }}>
-              Gestión y seguimiento de partes e incidencias
-            </Typography>
-            <Box sx={{ width: '80px', height: '2px', background: 'linear-gradient(90deg, rgba(99,102,241,0.8), transparent)', borderRadius: '1px' }} />
-          </Box>
-          <Button
-            variant="contained"
-            startIcon={<AddIcon />}
-            onClick={() => navigate('/partes/nuevo')}
-            sx={{
-              fontWeight: 600, borderRadius: '12px', textTransform: 'none',
-              background: 'linear-gradient(135deg, #6366f1, #4f46e5)',
-              boxShadow: '0 4px 14px rgba(99,102,241,0.35)',
-              px: 3, py: 1.2,
-              '&:hover': { background: 'linear-gradient(135deg, #4f46e5, #3730a3)', transform: 'translateY(-1px)' }
-            }}
-          >
-            Nuevo parte
-          </Button>
+    <Box>
+      <Box sx={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', mb: 3.5, flexWrap: 'wrap', gap: 2 }}>
+        <Box>
+          <Typography sx={{ fontFamily: T.fontDisp, fontWeight: 800, fontSize: '1.25rem', letterSpacing: '-0.01em', color: T.t1, mb: 0.5 }}>
+            Partes de Trabajo
+          </Typography>
+          <Typography sx={{ fontFamily: T.fontUI, fontSize: '0.8125rem', color: T.t3, letterSpacing: '0.01em' }}>
+            Gestión y seguimiento de partes e incidencias
+          </Typography>
         </Box>
+        <Button variant="contained" startIcon={<AddIcon />} endIcon={<ArrowForwardIcon />} onClick={() => navigate('/partes/nuevo')}
+          sx={{ background: T.accent, color: T.bg, borderRadius: '6px', textTransform: 'none', fontFamily: T.fontDisp, fontWeight: 600, fontSize: '0.75rem', letterSpacing: '0.04em', px: 2, py: 0.875, boxShadow: 'none', '&:hover': { background: '#b8924a', boxShadow: 'none' } }}>
+          Nuevo parte
+        </Button>
       </Box>
 
-      {/* Stat cards */}
       {!loading && (
-        <Fade in timeout={800}>
-          <Box sx={{
-            display: 'grid',
-            gridTemplateColumns: { xs: '1fr', sm: 'repeat(2, 1fr)', lg: 'repeat(4, 1fr)' },
-            gap: { xs: 2, sm: 3 }, mb: 4
-          }}>
-            <StatCard title="Total Partes" value={total} icon={<DescriptionIcon />} color="#6366f1" subtitle="Todos los partes" />
-            <StatCard title="Pendientes" value={pendientes} icon={<PendingIcon />} color="#f59e0b" subtitle="Esperando atención" />
-            <StatCard title="En proceso" value={enProceso} icon={<BuildIcon />} color="#3b82f6" subtitle="En curso ahora" />
-            <StatCard title="Resueltos" value={resueltos} icon={<CheckCircleIcon />} color="#22c55e" subtitle="Cerrados con éxito" />
-          </Box>
-        </Fade>
+        <Grid container spacing={2.5} sx={{ mb: 3 }}>
+          {[
+            { title: 'Total',      value: partes.length,                                 icon: DescriptionOutlinedIcon, color: T.accent,  subtitle: 'Todos los partes' },
+            { title: 'Pendientes', value: partes.filter(p=>p.estado==='pendiente').length, icon: HourglassEmptyIcon,     color: T.yellow,  subtitle: 'Sin atender' },
+            { title: 'En Proceso', value: partes.filter(p=>p.estado==='en_proceso').length,icon: BuildOutlinedIcon,      color: T.blue,    subtitle: 'En curso' },
+            { title: 'Resueltos',  value: partes.filter(p=>p.estado==='resuelto').length, icon: CheckCircleOutlineIcon,  color: T.green,   subtitle: 'Finalizados' },
+          ].map((c, i) => <Grid item xs={12} sm={6} lg={3} key={i}><StatCard {...c} /></Grid>)}
+        </Grid>
       )}
 
-      {/* Filtros */}
-      <Paper sx={{
-        p: 3, mb: 4,
-        background: 'rgba(30, 41, 59, 0.4)',
-        border: '1px solid rgba(71, 85, 105, 0.3)',
-        borderRadius: '16px', backdropFilter: 'blur(20px)'
-      }}>
-        <Typography variant="h6" sx={{ color: '#f1f5f9', mb: 3, fontWeight: 600 }}>Filtros de Búsqueda</Typography>
-        <Grid container spacing={3}>
+      <Box sx={{ background: T.bgCard, border: `1px solid ${T.border}`, borderRadius: '6px', p: 2.5, mb: 2.5 }}>
+        <Grid container spacing={2} alignItems="flex-end">
           <Grid item xs={12} md={5}>
-            <TextField
-              fullWidth label="Buscar por título, solicitante..."
-              variant="outlined" value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              onKeyDown={(e) => e.key === 'Enter' && handleBuscar()}
-              InputProps={{ startAdornment: <SearchIcon sx={{ color: '#94a3b8', mr: 1 }} /> }}
-              sx={inputSx}
-            />
+            <TextField fullWidth size="small" label="Buscar por título o solicitante…" value={search} onChange={e => setSearch(e.target.value)} onKeyDown={e => e.key === 'Enter' && handleBuscar()}
+              InputProps={{ startAdornment: <SearchIcon sx={{ color: T.t3, fontSize: '1rem', mr: 0.5 }} /> }} sx={inputSx} />
           </Grid>
           <Grid item xs={12} md={3}>
-            <TextField fullWidth select label="Estado" value={filtroEstado}
-              onChange={(e) => setFiltroEstado(e.target.value)} sx={inputSx}>
+            <TextField fullWidth select size="small" label="Estado" value={filtroEstado} onChange={e => setFiltroEstado(e.target.value)} sx={inputSx} SelectProps={menuPaperSx}>
               <MenuItem value="">Todos</MenuItem>
-              {ESTADOS_PARTE.map(e => <MenuItem key={e.value} value={e.value}>{e.label}</MenuItem>)}
+              {ESTADOS.map(e => <MenuItem key={e.value} value={e.value}>{e.label}</MenuItem>)}
             </TextField>
           </Grid>
           <Grid item xs={12} md={2}>
-            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
-              <Button variant="contained" onClick={handleBuscar} disabled={searching}
-                startIcon={searching ? <CircularProgress size={16} sx={{ color: '#fff' }} /> : <SearchIcon />}
-                sx={{
-                  fontWeight: 600, borderRadius: '12px', textTransform: 'none',
-                  background: 'linear-gradient(135deg, #6366f1, #4f46e5)',
-                  boxShadow: '0 4px 14px rgba(99,102,241,0.3)',
-                  '&:hover': { background: 'linear-gradient(135deg, #4f46e5, #3730a3)', transform: 'translateY(-1px)' }
-                }}>
-                {searching ? 'Buscando...' : 'Buscar'}
+            <Box sx={{ display: 'flex', gap: 1 }}>
+              <Button fullWidth variant="contained" size="small" onClick={handleBuscar} disabled={searching}
+                sx={{ background: T.accent, color: T.bg, borderRadius: '6px', textTransform: 'none', fontFamily: T.fontDisp, fontWeight: 600, fontSize: '0.75rem', letterSpacing: '0.04em', height: 36, boxShadow: 'none', '&:hover': { background: '#b8924a', boxShadow: 'none' } }}>
+                {searching ? <CircularProgress size={14} sx={{ color: T.bg }} /> : 'Buscar'}
               </Button>
-              <Button variant="outlined" onClick={handleClear}
-                sx={{
-                  borderColor: 'rgba(71,85,105,0.5)', color: '#94a3b8', fontWeight: 500,
-                  borderRadius: '12px', textTransform: 'none', fontSize: '0.8rem',
-                  '&:hover': { borderColor: '#94a3b8', background: 'rgba(71,85,105,0.1)' }
-                }}>
-                Limpiar
-              </Button>
+              <Button size="small" onClick={() => { setSearch(''); setFiltroEstado(''); setFiltered(partes); }}
+                sx={{ minWidth: 0, px: 1, color: T.t3, borderRadius: '6px', '&:hover': { background: T.bgHover, color: T.t2 } }}>×</Button>
             </Box>
           </Grid>
         </Grid>
-      </Paper>
+      </Box>
 
-      {/* Progress */}
-      {(loading || searching) && (
-        <Box sx={{ mb: 3 }}>
-          <LinearProgress sx={{
-            height: 6, borderRadius: 3,
-            backgroundColor: 'rgba(71, 85, 105, 0.3)',
-            '& .MuiLinearProgress-bar': { borderRadius: 3, background: 'linear-gradient(90deg, #6366f1, #4f46e5)' }
-          }} />
-        </Box>
-      )}
+      {(loading || searching) && <LinearProgress sx={{ mb: 2, height: 2, borderRadius: 1, backgroundColor: 'rgba(255,255,255,0.05)', '& .MuiLinearProgress-bar': { background: T.accent } }} />}
 
-      {/* DataGrid */}
       {!loading && filtered.length === 0 ? (
-        <Fade in timeout={600}>
-          <Paper sx={{
-            p: 6, background: 'rgba(30, 41, 59, 0.4)', border: '1px solid rgba(71, 85, 105, 0.3)',
-            borderRadius: '16px', backdropFilter: 'blur(20px)', textAlign: 'center'
-          }}>
-            <DescriptionIcon sx={{ fontSize: '4rem', color: '#64748b', mb: 2 }} />
-            <Typography variant="h6" sx={{ color: '#f1f5f9', mb: 1, fontWeight: 600 }}>
-              No hay partes disponibles
-            </Typography>
-            <Typography variant="body2" sx={{ color: '#94a3b8' }}>
-              Crea el primer parte con el botón "Nuevo parte" o ajusta los filtros.
-            </Typography>
-          </Paper>
-        </Fade>
+        <Box sx={{ background: T.bgCard, border: `1px solid ${T.border}`, borderRadius: '6px', p: 6, textAlign: 'center' }}>
+          <DescriptionOutlinedIcon sx={{ fontSize: '2.5rem', color: T.t3, mb: 1.5 }} />
+          <Typography sx={{ fontFamily: T.fontDisp, color: T.t1, fontWeight: 600, mb: 0.5 }}>Sin partes</Typography>
+          <Typography sx={{ fontFamily: T.fontUI, color: T.t3, fontSize: '0.875rem' }}>Crea el primer parte o ajusta los filtros</Typography>
+        </Box>
       ) : (
-        <Box sx={{ height: 600, width: '100%' }}>
-          <DataGrid
-            rows={filtered}
-            columns={columns}
-            pageSize={20}
-            rowsPerPageOptions={[10, 20, 50]}
-            loading={loading}
-            disableRowSelectionOnClick
-            onRowClick={(params) => navigate(`/partes/${params.row.id}`)}
-            sx={{
-              background: 'rgba(30, 41, 59, 0.4)',
-              border: '1px solid rgba(71, 85, 105, 0.3)',
-              borderRadius: '16px', backdropFilter: 'blur(20px)',
-              fontSize: '0.95rem', color: '#f1f5f9',
-              '& .MuiDataGrid-cell': {
-                color: '#f1f5f9', borderColor: 'rgba(71, 85, 105, 0.2)',
-                padding: '12px',
-                '&:focus, &:focus-within': { outline: 'none' },
-              },
-              '& .MuiDataGrid-columnHeaders': {
-                backgroundColor: 'rgba(15, 23, 42, 0.6)', color: '#f1f5f9',
-                fontWeight: 700, borderColor: 'rgba(71, 85, 105, 0.3)',
-                letterSpacing: '0.025em', fontSize: '0.9rem',
-                borderRadius: '16px 16px 0 0',
-              },
-              '& .MuiDataGrid-columnHeader': {
-                backgroundColor: 'inherit', color: 'inherit',
-                '&:focus, &:focus-within': { outline: 'none' },
-              },
-              '& .MuiDataGrid-row': {
-                cursor: 'pointer',
-                '&:hover': { backgroundColor: 'rgba(99, 102, 241, 0.05)' },
-              },
-              '& .MuiDataGrid-footerContainer': {
-                borderColor: 'rgba(71, 85, 105, 0.3)', color: '#94a3b8',
-                '& .MuiTablePagination-root': { color: '#94a3b8' },
-                '& .MuiIconButton-root': { color: '#94a3b8' },
-                '& .MuiSelect-select': { color: '#94a3b8' },
-              },
-              '& .MuiDataGrid-columnSeparator': { color: 'rgba(71, 85, 105, 0.3)' },
-            }}
-          />
+        <Box sx={{ height: 580, width: '100%' }}>
+          <DataGrid rows={filtered} columns={columns} pageSize={20} rowsPerPageOptions={[10, 20, 50]} loading={loading} disableRowSelectionOnClick onRowClick={p => navigate(`/partes/${p.row.id}`)} sx={dgSx} />
         </Box>
       )}
     </Box>
